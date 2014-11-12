@@ -3167,7 +3167,7 @@ public final class Settings {
          * @hide
          */
         public static final String POINTER_SPEED = "pointer_speed";
-		
+
 	/**
          * Whether to show the weather info on the lock screen
          * @hide
@@ -3179,7 +3179,7 @@ public final class Settings {
          * @hide
          */
         public static final String LOCK_SCREEN_SHOW_WEATHER_LOCATION = "lock_screen_show_weather_location";
-		
+
 		/**
          * Whether to show the weather update timestamp on the lock screen
          * @hide
@@ -3212,7 +3212,7 @@ public final class Settings {
          * Color of the weather condition icons on the lock screen
          * @hide
          */
-        public static final String LOCK_SCREEN_WEATHER_ICON_COLOR = "lock_screen_weather_icon_color";				
+        public static final String LOCK_SCREEN_WEATHER_ICON_COLOR = "lock_screen_weather_icon_color";
 
         /**
          * Show icon when stylus is used?
@@ -3348,7 +3348,7 @@ public final class Settings {
          * @hide
          */
         public static final String KEY_HOME_LONG_PRESS_ACTION = "key_home_long_press_action";
-        
+
         /**
 	 * Status bar greeting
 	 * @hide
@@ -3441,6 +3441,14 @@ public final class Settings {
          * @hide
          */
         public static final String CAMERA_WAKE_SCREEN = "camera_wake_screen";
+
+        /**
+         * Settings to reset on user choice. They will fall back to their default value (0).
+         *
+         * @hide
+         */
+        public static final String[] SETTINGS_TO_RESET = {
+        };
 
         /**
          * Whether or not to send device back to sleep if Camera button is released ("Peek")
@@ -9773,4 +9781,3 @@ public final class Settings {
         return "android-" + Long.toHexString(androidId);
     }
 }
-
