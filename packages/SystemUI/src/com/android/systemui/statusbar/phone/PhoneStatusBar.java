@@ -483,6 +483,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.TESLA.HEADS_UP_NOTIFICATION_DECAY), false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.STATUS_BAR_GREETING), false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.PIE_CONTROLS),
+                    false, this, UserHandle.USER_ALL);
             update();
         }
 
@@ -597,6 +600,12 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private static boolean isClockLocationOutsideSystemIconArea(int clockLocation) {
         return clockLocation == Clock.STYLE_CLOCK_CENTER
                 || clockLocation == Clock.STYLE_CLOCK_LEFT;
+    }
+	
+    private boolean isPieEnabled() {
+        return Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.PIE_CONTROLS, 0,
+                UserHandle.USER_CURRENT) == 1;
     }
 
     class DevForceNavbarObserver extends UserContentObserver {
@@ -1660,6 +1669,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         prepareNavigationBarView(forceReset);
 
         mWindowManager.addView(mNavigationBarView, getNavigationBarLayoutParams());
+        mNavigationBarOverlay.setNavigationBar(mNavigationBarView);
     }
 
     private void removeNavigationBar() {
@@ -1841,6 +1851,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         // Recalculate the position of the sliding windows and the titles.
         setAreThereNotifications();
         updateExpandedViewPos(EXPANDED_LEAVE_ALONE);
+        restorePieTriggerMask();
     }
 
     public void displayNotificationFromHeadsUp(StatusBarNotification notification) {
