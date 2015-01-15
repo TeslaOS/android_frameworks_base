@@ -1923,12 +1923,14 @@
          "power" = Power off
          "settings" = An action to launch settings
          "airplane" = Airplane mode toggle
+	 "screenrecord" = Take screen recording
          "bugreport" = Take bug report, if available
          "silent" = silent mode
          "users" = list of users
          -->
     <string-array translatable="false" name="config_globalActionsList">
         <item>power</item>
+	<item>screenrecord</item>
         <item>bugreport</item>
         <item>users</item>
     </string-array>
@@ -2342,8 +2344,10 @@
 
     <string-array name="config_externalCMServices"></string-array>
 
+
     <!-- If this is true, key chords can be used to take a screen record on the device. -->
     <bool name="config_enableScreenrecordChord">true</bool>
+
 
 </resources>
 
