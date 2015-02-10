@@ -3340,6 +3340,12 @@ public final class Settings {
          * @hide
          */
         public static final String KEY_HOME_LONG_PRESS_ACTION = "key_home_long_press_action";
+        
+        /**
+	 * Status bar greeting
+	 * @hide
+	 */
+        public static final String STATUS_BAR_GREETING = "status_bar_greeting";
 
         /**
          * Action to perform when the home key is double-tapped.
