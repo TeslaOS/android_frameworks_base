@@ -63,6 +63,8 @@ import com.android.systemui.qs.tiles.UsbTetherTile;
 import com.android.systemui.qs.tiles.VisualizerTile;
 import com.android.systemui.qs.tiles.ScreenrecordTile;
 import com.android.systemui.qs.tiles.ScreenTimeoutTile;
+import com.android.systemui.qs.tiles.NavBarTile;
+import com.android.systemui.qs.tiles.AppCircleBarTile;
 import com.android.systemui.qs.tiles.WifiTile;
 import com.android.systemui.settings.CurrentUserTracker;
 import com.android.systemui.statusbar.CustomTileData;
@@ -375,6 +377,10 @@ public class QSTileHost implements QSTile.Host {
                 return new ScreenrecordTile(this);
             case QSConstants.TILE_SYNC:
                 return new SyncTile(this);
+            case QSConstants.TILE_NAVBAR:
+                return new NavBarTile(this);
+            case QSConstants.TILE_APPCIRCLEBAR:
+                return new AppCircleBarTile(this);
             default:
                 throw new IllegalArgumentException("Bad tile spec: " + tileSpec);
         }
