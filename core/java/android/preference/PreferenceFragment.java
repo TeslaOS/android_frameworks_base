@@ -269,11 +269,6 @@ public abstract class PreferenceFragment extends Fragment implements
                 postBindPreferences();
             }
         }
-        CharSequence title = preferenceScreen.getTitle();
-        // Set the title of the activity
-        if (title != null) {
-            getActivity().setTitle(title);
-        }
     }
 
     /**
