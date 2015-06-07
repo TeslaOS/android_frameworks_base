@@ -273,10 +273,9 @@ interface IWindowManager
     boolean clearWindowContentFrameStats(IBinder token);
 
     /**
-     * Gets the content frame statistics for a given window.
+     * Get current system ui visibility mode.
      *
-     * @param token The window token.
-     * @return The frame statistics or null if the window does not exist.
+     * @hide
      */
-    WindowContentFrameStats getWindowContentFrameStats(IBinder token);
+    int getSystemUIVisibility();
 }
