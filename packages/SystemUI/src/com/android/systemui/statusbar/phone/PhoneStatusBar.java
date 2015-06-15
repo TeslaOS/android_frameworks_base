@@ -471,9 +471,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.Secure.RECENTS_LONG_PRESS_ACTIVITY), false, this);
             resolver.registerContentObserver(Settings.TESLA.getUriFor(
                     Settings.TESLA.HEADS_UP_NOTIFICATION_DECAY), false, this, UserHandle.USER_ALL);
-					Settings.System.STATUS_BAR_GREETING),
-                    false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_GREETING), false, this, UserHandle.USER_ALL);
             update();
         }
 
