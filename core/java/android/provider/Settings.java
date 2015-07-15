@@ -2630,22 +2630,6 @@ public final class Settings {
         public static final String ALARM_ALERT = "alarm_alert";
 
         /**
-         * Persistent store for the system-wide default mms notification sound.
-         *
-         * @see #DEFAULT_MMS_NOTIFICATION_URI
-         * @hide
-         */
-        public static final String MMS_NOTIFICATION_SOUND = "mms_notification";
-
-        /**
-         * A {@link Uri} that will point to the current default mms notification
-         * sound at any given time.
-         *
-         * @hide
-         */
-        public static final Uri DEFAULT_MMS_NOTIFICATION_URI = getUriFor(MMS_NOTIFICATION_SOUND);
-
-        /**
          * A {@link Uri} that will point to the current default alarm alert at
          * any given time.
          *
@@ -3451,6 +3435,24 @@ public final class Settings {
          * @hide
          */
         public static final String APP_SWITCH_WAKE_SCREEN = "app_switch_wake_screen";
+
+        /**
+         * Whether to wake the screen with the camera key half-press.
+         * @hide
+         */
+        public static final String CAMERA_WAKE_SCREEN = "camera_wake_screen";
+
+        /**
+         * Whether or not to send device back to sleep if Camera button is released ("Peek")
+         * @hide
+         */
+        public static final String CAMERA_SLEEP_ON_RELEASE = "camera_sleep_on_release";
+
+        /**
+         * Whether to launch secure camera app when key is longpressed
+         * @hide
+         */
+        public static final String CAMERA_LAUNCH = "camera_launch";
 
         /**
          * Whether to wake the screen with the volume keys, the value is boolean.
@@ -4965,12 +4967,6 @@ public final class Settings {
          */
         public static final String LOCK_SCREEN_APPWIDGET_IDS =
             "lock_screen_appwidget_ids";
-
-        /**
-         * List of enrolled fingerprint identifiers (comma-delimited).
-         * @hide
-         */
-        public static final String USER_FINGERPRINT_IDS = "user_fingerprint_ids";
 
         /**
          * Id of the appwidget shown on the lock screen when appwidgets are disabled.
@@ -8263,6 +8259,12 @@ public final class Settings {
          * @hide
          */
         public static final String WIFI_AUTO_PRIORITIES_CONFIGURATION = "wifi_auto_priority";
+
+        /**
+         * List of enrolled fingerprint identifiers (comma-delimited).
+         * @hide
+         */
+        public static final String USER_FINGERPRINTS = "user_fingerprints";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
