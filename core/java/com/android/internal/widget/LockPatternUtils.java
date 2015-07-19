@@ -560,10 +560,9 @@ public class LockPatternUtils {
         saveLockPassword(null, DevicePolicyManager.PASSWORD_QUALITY_SOMETHING, isFallback, false,
                 userHandle);
         setLockPatternEnabled(false, userHandle);
-        saveLockPattern(null, isFallback, userHandle);
+        saveLockPattern(null, isFallback, false, userHandle);
         saveLockGesture(null);
         setLockGestureEnabled(false);
-        saveLockPattern(null, isFallback, false, userHandle);
         setLong(PASSWORD_TYPE_KEY, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED, userHandle);
         setLong(PASSWORD_TYPE_ALTERNATE_KEY, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED,
                 userHandle);
@@ -1809,19 +1808,6 @@ public class LockPatternUtils {
                 isPattern && isLockPatternEnabled(userId) && savedPatternExists(userId)
                 || isPassword && savedPasswordExists(userId)
                 || isGesture && isLockGestureEnabled() && savedGestureExists();
-        return secure && getActiveProfileLockMode() != Profile.LockMode.DISABLE;
-    }
-
-    public int getActiveProfileLockMode() {
-        // Check device policy
-        DevicePolicyManager dpm = getDevicePolicyManager();
-        if (dpm.requireSecureKeyguard(getCurrentOrCallingUserId())) {
-            // Always enforce lock screen
-            return Profile.LockMode.DEFAULT;
-        }
-        final Profile profile = mProfileManager.getActiveProfile();
-        return profile == null ? Profile.LockMode.DEFAULT : profile.getScreenLockMode();
-                || isPassword && savedPasswordExists(userId);
         return secure;
     }
 
