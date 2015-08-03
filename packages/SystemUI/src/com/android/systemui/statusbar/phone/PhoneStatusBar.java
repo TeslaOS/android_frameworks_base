@@ -641,6 +641,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     oldClockView.setAlpha(1f);
                     oldClockView.setVisibility(View.GONE);
                 }
+            }
 
             if (mNavigationBarView != null) {
                 boolean navLeftInLandscape = Settings.System.getIntForUser(resolver,
@@ -1122,7 +1123,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         updateShowSearchHoldoff();
 
-            addAppCircleSidebar();
             addSidebarView();
             addGestureAnywhereView();
 
