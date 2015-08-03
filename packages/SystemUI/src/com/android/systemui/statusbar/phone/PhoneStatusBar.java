@@ -594,7 +594,13 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mVisualizerEnabled = Settings.Secure.getIntForUser(resolver,
                     Settings.Secure.LOCKSCREEN_VISUALIZER_ENABLED, 1,
                     UserHandle.USER_CURRENT) != 0;
-
+            int sidebarPosition = Settings.System.getInt(
+                    resolver, Settings.System.APP_SIDEBAR_POSITION, AppSidebar.SIDEBAR_POSITION_LEFT);
+            if (sidebarPosition != mSidebarPosition) {
+                mSidebarPosition = sidebarPosition;
+                removeSidebarView();
+                addSidebarView();
+            }
             mGreeting = Settings.System.getStringForUser(resolver,
 					Settings.System.STATUS_BAR_GREETING,
 					UserHandle.USER_CURRENT);
@@ -635,14 +641,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     oldClockView.setAlpha(1f);
                     oldClockView.setVisibility(View.GONE);
                 }
-
-            int sidebarPosition = Settings.System.getInt(
-                    resolver, Settings.System.APP_SIDEBAR_POSITION, AppSidebar.SIDEBAR_POSITION_LEFT);
-            if (sidebarPosition != mSidebarPosition) {
-                mSidebarPosition = sidebarPosition;
-                removeSidebarView();
-                addSidebarView();
-            }
 
             if (mNavigationBarView != null) {
                 boolean navLeftInLandscape = Settings.System.getIntForUser(resolver,
