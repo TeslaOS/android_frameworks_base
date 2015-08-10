@@ -51,7 +51,6 @@ public class QSConstants {
     public static final String TILE_AMBIENT_DISPLAY = "ambient_display";
     public static final String TILE_SYNC = "sync";
     public static final String TILE_SCREENRECORD = "screenrecord";
-    public static final String TILE_NAVBAR = "toggleNavBar";
     public static final String TILE_APPCIRCLEBAR = "toggleAppCircleBar";
 
     public static final String DYNAMIC_TILE_NEXT_ALARM = "next_alarm";
@@ -102,8 +101,7 @@ public class QSConstants {
         TILES_AVAILABLE.addAll(STATIC_TILES_AVAILABLE);
         TILES_AVAILABLE.addAll(DYNAMIC_TILES_AVAILABLE);
 
-	TILES_AVAILABLE.add(TILE_SCREENRECORD);  
-        TILES_AVAILABLE.add(TILE_NAVBAR);
+	TILES_AVAILABLE.add(TILE_SCREENRECORD);
         TILES_AVAILABLE.add(TILE_APPCIRCLEBAR);
     }
 }
