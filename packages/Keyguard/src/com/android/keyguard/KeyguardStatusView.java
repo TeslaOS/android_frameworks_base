@@ -29,6 +29,7 @@ import android.content.res.Resources;
 import android.provider.AlarmClock;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
@@ -333,9 +334,9 @@ public class KeyguardStatusView extends GridLayout implements
         mWeatherConditionImage.setImageDrawable(null);
         Drawable weatherIcon = mWeatherConditionDrawable;
         if (iconNameValue == 0 || colorizeAllIcons) {
-            Bitmap coloredWeatherIcon =
-                    ImageHelper.getColoredBitmap(weatherIcon, iconColor);
-            mWeatherConditionImage.setImageBitmap(coloredWeatherIcon);
+            Drawable coloredWeatherIcon =
+                    ImageHelper.getColoredDrawable(weatherIcon, iconColor);
+            mWeatherConditionImage.setImageDrawable(coloredWeatherIcon);
         } else {
             mWeatherConditionImage.setImageDrawable(weatherIcon);
         }
