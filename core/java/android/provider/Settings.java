@@ -3448,6 +3448,8 @@ public final class Settings {
          * @hide
          */
         public static final String[] SETTINGS_TO_RESET = {
+          SHAKE_TO_CLEAN_RECENTS,
+          SHAKE_TO_CLEAN_NOTIFICATIONS
         };
 
         /**
@@ -3899,6 +3901,21 @@ public final class Settings {
          * @hide
          */
         public static final String DISABLE_FC_NOTIFICATIONS = "disable_fc_notifications";
+
+
+        /**
+         * Shake to clean recents app screen
+         * @hide
+         *
+         */
+        public static final String SHAKE_TO_CLEAN_RECENTS = "shake_to_clean_recents";
+
+        /**
+         * Shake to clean notifications
+         * @hide
+         *
+         */
+        public static final String SHAKE_TO_CLEAN_NOTIFICATIONS = "shake_to_clean_notifications";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
