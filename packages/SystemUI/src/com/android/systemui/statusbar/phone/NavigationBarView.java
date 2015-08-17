@@ -65,7 +65,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class NavigationBarView extends LinearLayout {
-	
+
     final static boolean DEBUG = false;
     final static String TAG = "PhoneStatusBar/NavigationBarView";
 
@@ -273,6 +273,10 @@ public class NavigationBarView extends LinearLayout {
         notifyVerticalChangedListener(mVertical);
     }
 
+		public void setTransparencyAllowedWhenVertical(boolean allowed) {
+        mBarTransitions.setTransparencyAllowedWhenVertical(allowed);
+    }
+		
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         initDownStates(event);
@@ -564,7 +568,7 @@ public class NavigationBarView extends LinearLayout {
     public void onFinishInflate() {
         mRot0 = (FrameLayout) findViewById(R.id.rot0);
         mRot90 = (FrameLayout) findViewById(R.id.rot90);
-		
+
         mRotatedViews[Configuration.ORIENTATION_PORTRAIT] = findViewById(R.id.rot0);
         mRotatedViews[Configuration.ORIENTATION_LANDSCAPE] = findViewById(R.id.rot90);
         mCurrentView = mRotatedViews[mContext.getResources().getConfiguration().orientation];
