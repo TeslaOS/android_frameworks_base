@@ -109,7 +109,7 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
         }
 
         @Override
-        public void run() {  
+        public void run() {
             // Finish Recents
             if (mLaunchIntent != null) {
                 if (mLaunchOpts != null) {
@@ -241,12 +241,14 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
             }
         }
 
+        boolean enableShakeCleanByUser = Settings.System.getInt(getContentResolver(),
+            Settings.System.SHAKE_TO_CLEAN_RECENTS, 0) == 1;
+
         // Update the top level view's visibilities
         if (mConfig.launchedWithNoRecentTasks) {
             if (mEmptyView == null) {
                 mEmptyView = mEmptyViewStub.inflate();
             }
-
             mRecentsView.enableShake(false);
             mEmptyView.setVisibility(View.VISIBLE);
             mEmptyView.setOnClickListener(new View.OnClickListener() {
@@ -262,8 +264,8 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
                 mEmptyView.setVisibility(View.GONE);
                 mEmptyView.setOnClickListener(null);
             }
-            mRecentsView.enableShake(true);
-            findViewById(R.id.clear_recents).setVisibility(View.VISIBLE);
+            mRecentsView.enableShake(true && enableShakeCleanByUser);
+            findViewById(R.id.floating_action_button).setVisibility(View.VISIBLE);
             boolean showSearchBar = Settings.System.getInt(getContentResolver(),
                        Settings.System.RECENTS_SHOW_SEARCH_BAR, 1) == 1;
             if (mRecentsView.hasSearchBar()) {
@@ -472,7 +474,7 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
         // Update the recent tasks
         updateRecentsTasks(getIntent());
 
-        
+
 
         // If this is a new instance from a configuration change, then we have to manually trigger
         // the enter animation state
