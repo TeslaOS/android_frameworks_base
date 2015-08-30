@@ -3443,16 +3443,6 @@ public final class Settings {
         public static final String CAMERA_WAKE_SCREEN = "camera_wake_screen";
 
         /**
-         * Settings to reset on user choice. They will fall back to their default value (0).
-         *
-         * @hide
-         */
-        public static final String[] SETTINGS_TO_RESET = {
-          SHAKE_TO_CLEAN_RECENTS,
-          SHAKE_TO_CLEAN_NOTIFICATIONS
-        };
-
-        /**
          * Whether or not to send device back to sleep if Camera button is released ("Peek")
          * @hide
          */
@@ -3651,7 +3641,21 @@ public final class Settings {
          * @hide
          */
         public static final String STATUS_BAR_SHOW_WEATHER = "status_bar_show_weather";
+        
+        /**
+         * Shake to clean recents app screen
+         * @hide
+         *
+         */
+        public static final String SHAKE_TO_CLEAN_RECENTS = "shake_to_clean_recents";
 
+        /**
+         * Shake to clean notifications
+         * @hide
+         *
+         */
+        public static final String SHAKE_TO_CLEAN_NOTIFICATIONS = "shake_to_clean_notifications";
+        
         /**
           * Volume keys control cursor in text fields (default is 0)
           * 0 - Disabled
@@ -3902,21 +3906,6 @@ public final class Settings {
          */
         public static final String DISABLE_FC_NOTIFICATIONS = "disable_fc_notifications";
 
-
-        /**
-         * Shake to clean recents app screen
-         * @hide
-         *
-         */
-        public static final String SHAKE_TO_CLEAN_RECENTS = "shake_to_clean_recents";
-
-        /**
-         * Shake to clean notifications
-         * @hide
-         *
-         */
-        public static final String SHAKE_TO_CLEAN_NOTIFICATIONS = "shake_to_clean_notifications";
-
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
@@ -4164,7 +4153,17 @@ public final class Settings {
          * @hide
          */
         public static final String WHEN_TO_MAKE_WIFI_CALLS = "when_to_make_wifi_calls";
-
+        
+        /**
+         * Settings to reset on user choice. They will fall back to their default value (0).
+         *
+         * @hide
+         */
+        public static final String[] SETTINGS_TO_RESET = {
+          SHAKE_TO_CLEAN_RECENTS,
+          SHAKE_TO_CLEAN_NOTIFICATIONS
+        };
+        
         // Settings moved to Settings.Secure
 
         /**
