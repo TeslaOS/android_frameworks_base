@@ -3710,7 +3710,7 @@ public final class Settings {
          * @hide
          */
         public static final String STATUS_BAR_SHOW_WEATHER = "status_bar_show_weather";
-        
+
         /**
          * Shake to clean recents app screen
          * @hide
@@ -3724,7 +3724,7 @@ public final class Settings {
          *
          */
         public static final String SHAKE_TO_CLEAN_NOTIFICATIONS = "shake_to_clean_notifications";
-        
+
         /**
           * Volume keys control cursor in text fields (default is 0)
           * 0 - Disabled
@@ -4224,7 +4224,7 @@ public final class Settings {
          * @hide
          */
         public static final String WHEN_TO_MAKE_WIFI_CALLS = "when_to_make_wifi_calls";
-        
+
         /**
          * Settings to reset on user choice. They will fall back to their default value (0).
          *
@@ -4234,7 +4234,7 @@ public final class Settings {
           SHAKE_TO_CLEAN_RECENTS,
           SHAKE_TO_CLEAN_NOTIFICATIONS
         };
-        
+
         // Settings moved to Settings.Secure
 
         /**
@@ -6529,6 +6529,12 @@ public final class Settings {
         public static final String PRIVACY_GUARD_DEFAULT = "privacy_guard_default";
 
         /**
+         * Whether a notification should be shown if privacy guard is enabled
+         * @hide
+         */
+        public static final String PRIVACY_GUARD_NOTIFICATION = "privacy_guard_notification";
+
+        /**
          * Default theme to use.  If empty, use holo.
          * @hide
          */
@@ -6759,7 +6765,8 @@ public final class Settings {
             PRIVACY_GUARD_DEFAULT,
             ADVANCED_REBOOT,
             DEVELOPMENT_SHORTCUT,
-            STATUS_BAR_LOCKED_ON_SECURE_KEYGUARD
+            STATUS_BAR_LOCKED_ON_SECURE_KEYGUARD,
+            PRIVACY_GUARD_NOTIFICATION
         };
 
         /**

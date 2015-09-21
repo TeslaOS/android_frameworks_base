@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.policy;
 
+import android.app.Notification;
 import android.content.Context;
 import android.content.ContentResolver;
 import android.content.res.Configuration;
@@ -27,6 +28,7 @@ import android.os.Handler;
 import android.os.UserHandle;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -186,7 +188,8 @@ public class HeadsUpNotificationView extends FrameLayout implements SwipeHelper.
             mHeadsUp.setInterruption();
 
             // 2. Animate mHeadsUpNotificationView in
-            mBar.scheduleHeadsUpOpen();
+            mBar.scheduleHeadsUpOpen(TextUtils.equals(
+                    mHeadsUp.notification.getNotification().category, Notification.CATEGORY_CALL));
 
             // 3. Set alarm to age the notification off
             mBar.resetHeadsUpDecayTimer();
@@ -296,7 +299,7 @@ public class HeadsUpNotificationView extends FrameLayout implements SwipeHelper.
     public void onAttachedToWindow() {
         if (!mAttached) {
             mAttached = true;
-
+            super.onAttachedToWindow();
             final ViewConfiguration viewConfiguration = ViewConfiguration.get(getContext());
             float touchSlop = viewConfiguration.getScaledTouchSlop();
             mSwipeHelper = new SwipeHelper(SwipeHelper.X, this, getContext());
@@ -330,6 +333,7 @@ public class HeadsUpNotificationView extends FrameLayout implements SwipeHelper.
     @Override
     protected void onDetachedFromWindow() {
         if (mAttached) {
+          super.onDetachedFromWindow();
             mContext.getContentResolver().unregisterContentObserver(mSettingsObserver);
             mAttached = false;
         }
