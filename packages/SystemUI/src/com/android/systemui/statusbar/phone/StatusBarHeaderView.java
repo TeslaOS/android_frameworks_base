@@ -70,7 +70,7 @@ import com.android.systemui.statusbar.policy.UserInfoController;
 /**
  * The view to manage the header area in the expanded status bar.
  */
- public class StatusBarHeaderView extends RelativeLayout implements View.OnClickListener, View.OnLongClickListener,
+ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickListener,
          NextAlarmController.NextAlarmChangeCallback, WeatherController.Callback,
  		StatusBarHeaderMachine.IStatusBarHeaderMachineObserver {
     static final String TAG = "StatusBarHeaderView";
