@@ -60,6 +60,7 @@ interface IPowerManager
 
     // sets the attention light (used by phone app only)
     void setAttentionLight(boolean on, int color);
+<<<<<<< HEAD
     // update the uids being synchronized by network socket request manager
     void updateBlockedUids(int uid, boolean isBlocked);
 
@@ -70,4 +71,9 @@ interface IPowerManager
     oneway void cpuBoost(int duration);
 
     void wakeUpWithProximityCheck(long time, String reason, String opPackageName);
+=======
+
+    // blocked wakelock support
+    String getSeenWakeLocks();
+>>>>>>> 2802c15... Wakelock Blocker [1/2]
 }
