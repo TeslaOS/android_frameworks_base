@@ -151,6 +151,7 @@ import com.android.internal.util.tesla.WeatherController;
 import com.android.internal.util.tesla.WeatherController.WeatherInfo;
 import com.android.internal.util.tesla.WeatherControllerImpl;
 import com.android.keyguard.KeyguardHostView.OnDismissAction;
+import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.ViewMediatorCallback;
 import com.android.systemui.BatteryMeterView;
 import com.android.systemui.BatteryLevelTextView;
@@ -600,7 +601,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.System.SHAKE_TO_CLEAN_NOTIFICATIONS, 0,
                     UserHandle.USER_CURRENT) == 1;
             mBlurRadius = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.LOCKSCREEN_BLUR_RADIUS, 14);                    
+                    Settings.System.LOCKSCREEN_BLUR_RADIUS, 14);
             mWeatherTempStyle = Settings.System.getIntForUser(
                     resolver, Settings.System.STATUS_BAR_WEATHER_TEMP_STYLE, 0,
                     UserHandle.USER_CURRENT);
@@ -2643,7 +2644,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             }
         }
 
-        boolean keyguardVisible = (mState != StatusBarState.SHADE);
+        // HACK: Consider keyguard as visible if showing sim pin security screen
+        KeyguardUpdateMonitor updateMonitor = KeyguardUpdateMonitor.getInstance(mContext);
+        boolean keyguardVisible = mState != StatusBarState.SHADE || updateMonitor.isSimPinSecure();
 
         if (!mKeyguardFadingAway && keyguardVisible && backdropBitmap != null && mScreenOn) {
             // if there's album art, ensure visualizer is visible
