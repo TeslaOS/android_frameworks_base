@@ -448,8 +448,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.SCREEN_BRIGHTNESS_MODE), false, this, UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.NAVBAR_LEFT_IN_LANDSCAPE), false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(CMSettings.System.getUriFor(
+                    CMSettings.System.NAVBAR_LEFT_IN_LANDSCAPE), false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(CMSettings.System.getUriFor(
                     CMSettings.Secure.RECENTS_LONG_PRESS_ACTIVITY), false, this);
             update();
@@ -475,8 +475,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     UserHandle.USER_CURRENT) == 1;
 
             if (mNavigationBarView != null) {
-                boolean navLeftInLandscape = Settings.System.getIntForUser(resolver,
-                        Settings.System.NAVBAR_LEFT_IN_LANDSCAPE, 0, UserHandle.USER_CURRENT) == 1;
+                boolean navLeftInLandscape = CMSettings.System.getIntForUser(resolver,
+                        CMSettings.System.NAVBAR_LEFT_IN_LANDSCAPE, 0, UserHandle.USER_CURRENT) == 1;
                 mNavigationBarView.setLeftInLandscape(navLeftInLandscape);
             }
 
@@ -1353,7 +1353,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mNavigationBarView.reorient();
 
         mNavigationBarView.setListeners(mRecentsClickListener, mRecentsPreloadOnTouchListener,
-                mLongPressBackRecentsListener, mHomeActionListener);
+                mLongPressBackRecentsListener, mHomeActionListener, mLongPressHomeListener);
         mAssistManager.onConfigurationChanged();
     }
 
@@ -1976,6 +1976,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         final boolean hasBackdrop = backdropBitmap != null;
         mKeyguardShowingMedia = hasBackdrop;
+        if (mStatusBarWindowManager != null) {
+            mStatusBarWindowManager.setShowingMedia(mKeyguardShowingMedia);
+        }
 
         if ((hasBackdrop || DEBUG_MEDIA_FAKE_ARTWORK)
                 && (mState == StatusBarState.KEYGUARD || mState == StatusBarState.SHADE_LOCKED)
@@ -2224,6 +2227,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     public boolean isWakeUpComingFromTouch() {
         return mWakeUpComingFromTouch;
+    }
+
+    void setBlur(float b){
+        mStatusBarWindowManager.setBlur(b);
     }
 
     public boolean isFalsingThresholdNeeded() {
@@ -3195,7 +3202,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private void addStatusBarWindow() {
         makeStatusBarView();
         mStatusBarWindow.addContent(mStatusBarWindowContent);
-        mStatusBarWindowManager = new StatusBarWindowManager(mContext);
+        mStatusBarWindowManager = new StatusBarWindowManager(mContext, mKeyguardMonitor);
+        mStatusBarWindowManager.setShowingMedia(mKeyguardShowingMedia);
         mStatusBarWindowManager.add(mStatusBarWindow, getStatusBarHeight());
     }
 
@@ -4127,6 +4135,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
     }
 
+    boolean isSecure() {
+        return mStatusBarKeyguardViewManager != null && mStatusBarKeyguardViewManager.isSecure();
+    }
+
     public long calculateGoingToFullShadeDelay() {
         return mKeyguardFadingAwayDelay + mKeyguardFadingAwayDuration;
     }
@@ -4528,7 +4540,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     private void vibrateForCameraGesture() {
         // Make sure to pass -1 for repeat so VibratorService doesn't stop us when going to sleep.
-        mVibrator.vibrate(new long[] { 0, 750L }, -1 /* repeat */);
+        mVibrator.vibrate(new long[] { 0, 250L }, -1 /* repeat */);
     }
 
     public void onScreenTurnedOn() {
