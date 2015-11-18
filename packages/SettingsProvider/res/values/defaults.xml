@@ -66,14 +66,6 @@
          pending notification -->
     <bool name="def_notification_pulse">true</bool>
 
-    <!-- Default value for the notification LEDs brightness
-         on devices equiped with configurable LED controller -->
-    <integer name="def_notification_brightness_level">255</integer>
-
-    <!-- Default value for whether or not to use multiple notification LEDs
-         on devices equiped with more than one LED -->
-    <bool name="def_notification_multiple_leds">false</bool>
-
     <bool name="def_mount_play_notification_snd">true</bool>
     <bool name="def_mount_ums_autostart">false</bool>
     <bool name="def_mount_ums_prompt">true</bool>
@@ -92,10 +84,6 @@
     <string name="def_unlock_sound" translatable="false">/system/media/audio/ui/Unlock.ogg</string>
     <string name="def_trusted_sound" translatable="false">/system/media/audio/ui/Trusted.ogg</string>
     <string name="def_wireless_charging_started_sound" translatable="false">/system/media/audio/ui/WirelessChargingStarted.ogg</string>
-
-    <bool name="def_power_notifications_enabled">false</bool>
-    <bool name="def_power_notifications_vibrate">false</bool>
-    <string name="def_power_notifications_ringtone" translatable="false">content://settings/system/notification_sound</string>
 
     <bool name="def_lockscreen_disabled">false</bool>
     <bool name="def_device_provisioned">false</bool>
@@ -235,12 +223,12 @@
     <!-- Default for Settings.Secure.NFC_PAYMENT_COMPONENT -->
     <string name="def_nfc_payment_component"></string>
 
-    <!-- Defaults for Settings.System.DEV_FORCE_SHOW_NAVBAR. -->
-    <integer name="def_force_disable_navkeys">0</integer>
-
     <!-- Default for Settings.System.STATUS_BAR_NOTIF_COUNT. -->
     <integer name="def_notif_count">0</integer>
 
     <!-- Default protected sms originating address values of Settings.Secure.PROTECTED_SMS_ADDRESSES -->
     <string-array name="def_protected_sms_list_values"></string-array>
+
+    <!-- Default for Settings.Global.CAPTIVE_PORTAL_DETECTION_ENABLED -->
+    <integer name="def_captive_portal_detection_enabled" translatable="false">1</integer>
 </resources>
