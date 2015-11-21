@@ -96,9 +96,7 @@ public class NavigationBarView extends LinearLayout {
     private DeadZone mDeadZone;
     private final NavigationBarTransitions mBarTransitions;
 
-    private SettingsObserver mSettingsObserver;
-    private GestureDetector mDoubleTapGesture;
-    private boolean mDoubleTapToSleep;
+
 
     /**
      * Tracks the current visibilities of the far left (R.id.one) and right (R.id.six) buttons
@@ -129,6 +127,8 @@ public class NavigationBarView extends LinearLayout {
 
     private SettingsObserver mSettingsObserver;
     private boolean mShowDpadArrowKeys;
+    private GestureDetector mDoubleTapGesture;
+    private boolean mDoubleTapToSleep;
 
     // performs manual animation in sync with layout transitions
     private final NavTransitionListener mTransitionListener = new NavTransitionListener();
@@ -250,7 +250,6 @@ public class NavigationBarView extends LinearLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        mSettingsObserver.observe();
         ViewRootImpl root = getViewRootImpl();
         if (root != null) {
             root.setDrawDuringWindowsAnimating(true);
@@ -285,9 +284,9 @@ public class NavigationBarView extends LinearLayout {
         if (mDeadZone != null && event.getAction() == MotionEvent.ACTION_OUTSIDE) {
             mDeadZone.poke(event);
         }
-        if (mDoubleTapToSleep) {
+        if (Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.DOUBLE_TAP_SLEEP_NAVBAR, 0) == 1)
             mDoubleTapGesture.onTouchEvent(event);
-        }
         return super.onTouchEvent(event);
     }
 
@@ -792,37 +791,6 @@ public class NavigationBarView extends LinearLayout {
 
     public interface OnVerticalChangedListener {
         void onVerticalChanged(boolean isVertical);
-    }
-
-    private class SettingsObserver extends UserContentObserver {
-
-        SettingsObserver(Handler handler) {
-            super(handler);
-        }
-
-        @Override
-        protected void observe() {
-            super.observe();
-            ContentResolver resolver = mContext.getContentResolver();
-            resolver.registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.DOUBLE_TAP_SLEEP_NAVBAR),
-                    false, this, UserHandle.USER_ALL);
-
-            // intialize mModlockDisabled
-            onChange(false);
-        }
-
-        @Override
-        protected void unobserve() {
-            super.unobserve();
-            mContext.getContentResolver().unregisterContentObserver(this);
-        }
-
-        @Override
-        protected void update() {
-            mDoubleTapToSleep = Settings.System.getIntForUser(mContext.getContentResolver(),
-                    Settings.System.DOUBLE_TAP_SLEEP_NAVBAR, 0, UserHandle.USER_CURRENT) != 0;
-        }
     }
 
     void setListeners(OnClickListener recentsClickListener, OnTouchListener recentsPreloadListener,

@@ -32,6 +32,7 @@ import android.graphics.Outline;
 import android.graphics.Rect;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.os.Handler;
 import android.os.IRemoteCallback;
