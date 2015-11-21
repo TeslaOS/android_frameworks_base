@@ -695,6 +695,7 @@ public final class PowerManagerService extends SystemService
                     false, mSettingsObserver, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.Global.getUriFor(
                     CMSettings.Global.WAKE_WHEN_PLUGGED_OR_UNPLUGGED),
+                    false, mSettingsObserver, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
 		                Settings.System.WAKELOCK_BLOCKING_ENABLED),
 		                false, mSettingsObserver, UserHandle.USER_ALL);
@@ -3831,15 +3832,6 @@ public final class PowerManagerService extends SystemService
                 updatePowerStateLocked();
             }
         }
-    }
-
-    private void setButtonBrightnessOverrideFromWindowManagerInternal(int brightness) {
-        synchronized (mLock) {
-            if (mButtonBrightnessOverrideFromWindowManager != brightness) {
-                mButtonBrightnessOverrideFromWindowManager = brightness;
-                mDirty |= DIRTY_SETTINGS;
-                updatePowerStateLocked();
-
         @Override
         public String getSeenWakeLocks(){
             StringBuffer buffer = new StringBuffer();
@@ -3862,7 +3854,16 @@ public final class PowerManagerService extends SystemService
             String[] parts = wakeLockTagsString.split("\\|");
             for(int i = 0; i < parts.length; i++){
                 mBlockedWakeLocks.add(parts[i]);
+              }
+         }
+    }
 
+    private void setButtonBrightnessOverrideFromWindowManagerInternal(int brightness) {
+        synchronized (mLock) {
+            if (mButtonBrightnessOverrideFromWindowManager != brightness) {
+                mButtonBrightnessOverrideFromWindowManager = brightness;
+                mDirty |= DIRTY_SETTINGS;
+                updatePowerStateLocked();
             }
         }
     }

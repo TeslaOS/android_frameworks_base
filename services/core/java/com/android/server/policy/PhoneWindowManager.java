@@ -926,13 +926,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             resolver.registerContentObserver(CMSettings.System.getUriFor(
                     CMSettings.System.NAVBAR_LEFT_IN_LANDSCAPE), false, this,
                     UserHandle.USER_ALL);
-            resolver.registerContentObserver(SettingsSystemgetUriFor(
+            resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NAVIGATION_BAR_HEIGHT), false, this,
                     UserHandle.USER_ALL);
-            resolver.registerContentObserver(SettingsSystemgetUriFor(
+            resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NAVIGATION_BAR_HEIGHT_LANDSCAPE), false, this,
                     UserHandle.USER_ALL);
-            resolver.registerContentObserver(SettingsSystemgetUriFor(
+            resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NAVIGATION_BAR_WIDTH), false, this,
                     UserHandle.USER_ALL);
             updateSettings();
@@ -2214,8 +2214,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     Settings.System.ACCELEROMETER_ROTATION_ANGLES, -1);
 
                     // Navigation Bar Height
-                    int mNavigationBarHeight = SettingsSystemgetIntForUser(mContext.getContentResolver(),
-                            SettingsSystemNAVIGATION_BAR_HEIGHT, -2, UserHandle.USER_CURRENT);
+                    int mNavigationBarHeight = Settings.System.getIntForUser(mContext.getContentResolver(),
+                            Settings.System.NAVIGATION_BAR_HEIGHT, -2, UserHandle.USER_CURRENT);
 
                     if (mNavigationBarHeight == -2) {
                         mNavigationBarHeight = mContext.getResources().getDimensionPixelSize(
@@ -2225,8 +2225,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     }
 
                     // Navigation Bar Height Landscape
-                    int mNavigationBarHeightLandscape = SettingsSystemgetIntForUser(mContext.getContentResolver(),
-                            SettingsSystemNAVIGATION_BAR_HEIGHT_LANDSCAPE, -2, UserHandle.USER_CURRENT);
+                    int mNavigationBarHeightLandscape = Settings.System.getIntForUser(mContext.getContentResolver(),
+                            Settings.System.NAVIGATION_BAR_HEIGHT_LANDSCAPE, -2, UserHandle.USER_CURRENT);
 
                     if (mNavigationBarHeightLandscape == -2) {
                         mNavigationBarHeightLandscape = mContext.getResources().getDimensionPixelSize(
@@ -2236,8 +2236,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     }
 
                     // Navigation Bar Width
-                    int mNavigationBarWidth = SettingsSystemgetIntForUser(mContext.getContentResolver(),
-                            SettingsSystemNAVIGATION_BAR_WIDTH, -2, UserHandle.USER_CURRENT);
+                    int mNavigationBarWidth = Settings.System.getIntForUser(mContext.getContentResolver(),
+                            Settings.System.NAVIGATION_BAR_WIDTH, -2, UserHandle.USER_CURRENT);
 
                     if (mNavigationBarWidth == -2) {
                         mNavigationBarWidth = mContext.getResources().getDimensionPixelSize(
