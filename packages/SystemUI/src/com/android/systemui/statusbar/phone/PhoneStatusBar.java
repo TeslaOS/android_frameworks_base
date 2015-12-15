@@ -100,7 +100,6 @@ import android.view.WindowManagerGlobal;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewStub;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
@@ -136,6 +135,7 @@ import com.android.systemui.doze.DozeHost;
 import com.android.systemui.doze.DozeLog;
 import com.android.systemui.keyguard.KeyguardViewMediator;
 import com.android.systemui.omni.StatusBarHeaderMachine;
+import com.android.systemui.qs.QSDragPanel;
 import com.android.systemui.qs.QSPanel;
 import com.android.systemui.recents.ScreenPinningRequest;
 import com.android.systemui.settings.BrightnessController;
@@ -186,6 +186,8 @@ import com.android.systemui.statusbar.stack.NotificationStackScrollLayout.OnChil
 import com.android.systemui.statusbar.stack.StackStateAnimator;
 import com.android.systemui.statusbar.stack.StackViewState;
 import com.android.systemui.volume.VolumeComponent;
+import cyanogenmod.app.CustomTileListenerService;
+import cyanogenmod.app.StatusBarPanelCustomTile;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -342,7 +344,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     TextView mNotificationPanelDebugText;
 
     // settings
-    private QSPanel mQSPanel;
+    private QSDragPanel mQSPanel;
     private DevForceNavbarObserver mDevForceNavbarObserver;
 
     // top bar
@@ -365,9 +367,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     int mKeyguardMaxNotificationCount;
 
-    // carrier label
-    private TextView mCarrierLabel;
-    private boolean mShowCarrierInPanel = false;
     boolean mExpandedVisible;
 
     private int mNavigationBarWindowState = WINDOW_STATE_SHOWING;
@@ -800,7 +799,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         mStatusBarWindow = new StatusBarWindowView(mContext, null);
         mStatusBarWindow.setService(this);
-        
+
         super.start(); // calls createAndAddWindows()
 
         mMediaSessionManager
@@ -1088,23 +1087,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mNetworkController.addEmergencyListener(mHeader);
         }
 
-        mCarrierLabel = (TextView)mStatusBarWindow.findViewById(R.id.carrier_label);
-        final boolean showCarrierLabel = mContext.getResources().getBoolean(
-                R.bool.config_showCarrierLabel);
-        mShowCarrierInPanel = showCarrierLabel && (mCarrierLabel != null);
-        if (DEBUG) Log.v(TAG, "carrierlabel=" + mCarrierLabel + " show=" + mShowCarrierInPanel);
-        if (mShowCarrierInPanel) {
-            mCarrierLabel.setVisibility(mShowCarrierInPanel ? View.VISIBLE : View.INVISIBLE);
-        }
-
-        // make sure carrier label is not covered by navigation bar
-        if (mCarrierLabel != null && mNavigationBarView != null) {
-            MarginLayoutParams mlp = (MarginLayoutParams) mCarrierLabel.getLayoutParams();
-            if (mlp != null && mlp.bottomMargin < mNavigationBarView.mBarSize) {
-                mlp.bottomMargin = mNavigationBarView.mBarSize;
-                mCarrierLabel.setLayoutParams(mlp);
-            }
-        }
         mFlashlightController = new FlashlightController(mContext);
         mKeyguardBottomArea.setFlashlightController(mFlashlightController);
         mKeyguardBottomArea.setPhoneStatusBar(this);
@@ -1125,7 +1107,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
 
         // Set up the quick settings tile panel
-        mQSPanel = (QSPanel) mStatusBarWindowContent.findViewById(R.id.quick_settings_panel);
+        mQSPanel = (QSDragPanel) mStatusBarWindowContent.findViewById(R.id.quick_settings_panel);
         if (mQSPanel != null) {
             final QSTileHost qsh = new QSTileHost(mContext, this,
                     mBluetoothController, mLocationController, mRotationLockController,
@@ -1141,10 +1123,53 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             qsh.setCallback(new QSTileHost.Callback() {
                 @Override
                 public void onTilesChanged() {
-                    mQSPanel.setTiles(qsh.getTiles());
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mQSPanel.setTiles(qsh.getTiles());
+                        }
+                    });
+                }
+
+                @Override
+                public void setEditing(final boolean editing) {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mQSPanel.setEditing(editing);
+                            mHeader.setEditing(editing);
+                        }
+                    });
+                }
+
+                @Override
+                public boolean isEditing() {
+                    return mQSPanel.isEditing();
+                }
+
+                @Override
+                public void goToSettingsPage() {
+                    setEditing(true);
+                    mHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            mQSPanel.goToSettingsPage();
+                        }
+                    }, 500);
                 }
             });
         }
+
+        // Set up the initial custom tile listener state.
+        try {
+            mCustomTileListenerService.registerAsSystemService(mContext,
+                    new ComponentName(mContext.getPackageName(), getClass().getCanonicalName()),
+                    UserHandle.USER_ALL);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Unable to register custom tile listener", e);
+        }
+
+        mQSPanel.getHost().setCustomTileListenerService(mCustomTileListenerService);
 
         // User info. Trigger first load.
         mHeader.setUserInfoController(mUserInfoController);
@@ -1322,6 +1347,41 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
         return mNaturalBarHeight;
     }
+
+    private final CustomTileListenerService mCustomTileListenerService =
+            new CustomTileListenerService() {
+                @Override
+                public void onListenerConnected() {
+                    //Connected
+                }
+                @Override
+                public void onCustomTilePosted(final StatusBarPanelCustomTile sbc) {
+                    if (DEBUG) Log.d(TAG, "onCustomTilePosted: " + sbc.getCustomTile());
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            boolean isUpdate = mQSPanel.getHost().getCustomTileData()
+                                    .get(sbc.getKey()) != null;
+                            if (isUpdate) {
+                                mQSPanel.getHost().updateCustomTile(sbc);
+                            } else {
+                                mQSPanel.getHost().addCustomTile(sbc);
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void onCustomTileRemoved(final StatusBarPanelCustomTile sbc) {
+                    if (DEBUG) Log.d(TAG, "onCustomTileRemoved: " + sbc.getCustomTile());
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mQSPanel.getHost().removeCustomTileSysUi(sbc.getKey());
+                        }
+                    });
+                }
+            };
 
     private View.OnClickListener mRecentsClickListener = new View.OnClickListener() {
         public void onClick(View v) {
@@ -1786,21 +1846,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     protected void updateRowStates() {
         super.updateRowStates();
         mNotificationPanel.notifyVisibleChildrenChanged();
-    }
-
-    protected void updateCarrierLabelVisibility() {
-        if (!mShowCarrierInPanel) return;
-
-        final boolean makeVisible = mStackScroller.getVisibility() == View.VISIBLE
-                && mState != StatusBarState.KEYGUARD;
-
-        if ((mCarrierLabel.getVisibility() == View.VISIBLE) != makeVisible) {
-            if (DEBUG) {
-                Log.d(TAG, "making carrier label " + (makeVisible?"visible":"invisible"));
-            }
-
-            mCarrierLabel.setVisibility(makeVisible ? View.VISIBLE : View.INVISIBLE);
-        }
     }
 
     @Override
@@ -3579,6 +3624,17 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         // Stop the command queue until the new status bar container settles and has a layout pass
         mCommandQueue.pause();
+
+        if (mCustomTileListenerService != null) {
+            try {
+                mCustomTileListenerService.unregisterAsSystemService();
+            } catch (RemoteException e) {
+                Log.e(TAG, "Unable to unregister custom tile listener", e);
+            }
+        }
+
+        mQSPanel.getHost().setCustomTileListenerService(null);
+
         mStatusBarWindow.requestLayout();
         mStatusBarWindow.getViewTreeObserver().addOnGlobalLayoutListener(
                 new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -3848,6 +3904,15 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     public boolean shouldDisableNavbarGestures() {
         return !isDeviceProvisioned() || (mDisabled1 & StatusBarManager.DISABLE_SEARCH) != 0
                 || (mNavigationBarView != null && mNavigationBarView.isInEditMode());
+    }
+
+    public void postStartActivityDismissingKeyguard(final PendingIntent intent) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                startPendingIntentDismissingKeyguard(intent);
+            }
+        });
     }
 
     public void postStartActivityDismissingKeyguard(final Intent intent, int delay) {
@@ -4281,7 +4346,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         updateStackScrollerState(goingToFullShade);
         updateNotifications();
         checkBarModes();
-        updateCarrierLabelVisibility();
         updateMediaMetaData(false);
         mKeyguardMonitor.notifyKeyguardState(mStatusBarKeyguardViewManager.isShowing(),
                 mStatusBarKeyguardViewManager.isSecure());
@@ -4638,12 +4702,13 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     activityManager.stopLockTaskModeOnCurrent();
                     // When exiting refresh disabled flags.
                     mNavigationBarView.setDisabledFlags(mDisabled1, true);
-                } else if ((NavbarEditor.NAVBAR_BACK.equals(v.getTag()))
+                } else if (NavbarEditor.NAVBAR_BACK.equals(v.getTag())
                         && !mNavigationBarView.getRecentsButton().isPressed()) {
                     // If we aren't pressing recents right now then they presses
                     // won't be together, so send the standard long-press action.
                     sendBackLongPress = true;
-                } else if ((NavbarEditor.NAVBAR_RECENT.equals(v.getTag()))) {
+                } else if (NavbarEditor.NAVBAR_RECENT.equals(v.getTag())
+                         && !activityManager.isInLockTaskMode()) {
                     hijackRecentsLongPress = true;
                 }
                 mLastLockToAppLongPress = time;
@@ -4651,7 +4716,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 // If this is back still need to handle sending the long-press event.
                 if (NavbarEditor.NAVBAR_BACK.equals(v.getTag())) {
                     sendBackLongPress = true;
-                } else if (NavbarEditor.NAVBAR_RECENT.equals(v.getTag())) {
+                } else if (NavbarEditor.NAVBAR_RECENT.equals(v.getTag())
+                         && !activityManager.isInLockTaskMode()) {
                     hijackRecentsLongPress = true;
                 } else if (isAccessiblityEnabled && activityManager.isInLockTaskMode()) {
                     // When in accessibility mode a long press that is recents (not back)

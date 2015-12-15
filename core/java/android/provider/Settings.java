@@ -1437,25 +1437,6 @@ public final class Settings {
     }
 
     /**
-     * An app can use this method to check if it is currently allowed to change the network
-     * state. In order to be allowed to do so, an app must first declare either the
-     * {@link android.Manifest.permission#CHANGE_NETWORK_STATE} or
-     * {@link android.Manifest.permission#WRITE_SETTINGS} permission in its manifest. If it
-     * is currently disallowed, it can prompt the user to grant it this capability through a
-     * management UI by sending an Intent with action
-     * {@link android.provider.Settings#ACTION_MANAGE_WRITE_SETTINGS}.
-     *
-     * @param context A context
-     * @return true if the calling app can change the state of network, false otherwise.
-     * @hide
-     */
-    public static boolean canChangeNetworkState(Context context) {
-        int uid = Binder.getCallingUid();
-        return Settings.isCallingPackageAllowedToChangeNetworkState(context, uid, Settings
-                .getPackageNameForUid(context, uid), false);
-    }
-
-    /**
      * System settings, containing miscellaneous system preferences.  This
      * table holds simple name/value pairs.  There are convenience
      * functions for accessing individual settings entries.
@@ -2865,6 +2846,15 @@ public final class Settings {
         private static final Validator TEXT_AUTO_CAPS_VALIDATOR = sBooleanValidator;
 
         /**
+         * Setting to show if system is in power off alarm mode. 1 = true, 0 = false
+         * @hide
+         */
+        public static final String POWER_OFF_ALARM_MODE = "power_off_alarm_mode";
+
+        /** Validator for POWER_OFF_ALARM_MODE */
+        private static final Validator POWER_OFF_ALARM_MODE_VALIDATOR = sBooleanValidator;
+
+        /**
          * Setting to enable Auto Punctuate in text editors. 1 = On, 0 = Off. This
          * feature converts two spaces to a "." and space.
          */
@@ -3740,6 +3730,7 @@ public final class Settings {
             PUBLIC_SETTINGS.add(SOUND_EFFECTS_ENABLED);
             PUBLIC_SETTINGS.add(HAPTIC_FEEDBACK_ENABLED);
             PUBLIC_SETTINGS.add(SHOW_WEB_SUGGESTIONS);
+            PUBLIC_SETTINGS.add(POWER_OFF_ALARM_MODE);
         }
 
         /**
@@ -3865,6 +3856,7 @@ public final class Settings {
             VALIDATORS.put(WIFI_STATIC_NETMASK, WIFI_STATIC_NETMASK_VALIDATOR);
             VALIDATORS.put(WIFI_STATIC_DNS1, WIFI_STATIC_DNS1_VALIDATOR);
             VALIDATORS.put(WIFI_STATIC_DNS2, WIFI_STATIC_DNS2_VALIDATOR);
+            VALIDATORS.put(POWER_OFF_ALARM_MODE, POWER_OFF_ALARM_MODE_VALIDATOR);
         }
 
         /**
@@ -4173,6 +4165,9 @@ public final class Settings {
             MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_PATTERN_ENABLED);
             MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_PATTERN_VISIBLE);
             MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_PATTERN_TACTILE_FEEDBACK_ENABLED);
+            MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_PATTERN_SIZE);
+            MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_DOTS_VISIBLE);
+            MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_SHOW_ERROR_PATH);
 
             MOVED_TO_GLOBAL = new HashSet<String>();
             MOVED_TO_GLOBAL.add(Settings.Global.ADB_ENABLED);
@@ -4943,6 +4938,24 @@ public final class Settings {
                 LOCK_PATTERN_TACTILE_FEEDBACK_ENABLED = "lock_pattern_tactile_feedback_enabled";
 
         /**
+         * Determines the width and height of the LockPatternView widget
+         * @hide
+         */
+        public static final String LOCK_PATTERN_SIZE = "lock_pattern_size";
+
+        /**
+         * Whether lock pattern will show dots (0 = false, 1 = true)
+         * @hide
+         */
+        public static final String LOCK_DOTS_VISIBLE = "lock_pattern_dotsvisible";
+
+        /**
+         * Whether lockscreen error pattern is visible (0 = false, 1 = true)
+         * @hide
+         */
+        public static final String LOCK_SHOW_ERROR_PATH = "lock_pattern_show_error_path";
+
+        /**
          * This preference allows the device to be locked given time after screen goes off,
          * subject to current DeviceAdmin policy limits.
          * @hide
@@ -5614,6 +5627,12 @@ public final class Settings {
          */
         public static final String CONNECTIVITY_RELEASE_PENDING_INTENT_DELAY_MS =
                 "connectivity_release_pending_intent_delay_ms";
+
+        /**
+        * Whether the Wimax should be on.  Only the WiMAX service should touch this.
+        * @hide
+        */
+        public static final String WIMAX_ON = "wimax_on";
 
         /**
          * Whether background data usage is allowed.
@@ -8874,7 +8893,7 @@ public final class Settings {
      * write/modify system settings, as the condition differs for pre-M, M+, and
      * privileged/preinstalled apps. If the provided uid does not match the
      * callingPackage, a negative result will be returned. The caller is expected to have
-     * either WRITE_SETTINGS or CHANGE_NETWORK_STATE permission declared.
+     * the WRITE_SETTINGS permission declared.
      *
      * Note: if the check is successful, the operation of this app will be updated to the
      * current time.
@@ -8890,31 +8909,22 @@ public final class Settings {
     /**
      * Performs a strict and comprehensive check of whether a calling package is allowed to
      * change the state of network, as the condition differs for pre-M, M+, and
-     * privileged/preinstalled apps. If the provided uid does not match the
-     * callingPackage, a negative result will be returned. The caller is expected to have
-     * either of CHANGE_NETWORK_STATE or WRITE_SETTINGS permission declared.
-     * @hide
-     */
-    public static boolean isCallingPackageAllowedToChangeNetworkState(Context context, int uid,
-            String callingPackage, boolean throwException) {
-        return isCallingPackageAllowedToPerformAppOpsProtectedOperation(context, uid,
-                callingPackage, throwException, AppOpsManager.OP_WRITE_SETTINGS,
-                PM_CHANGE_NETWORK_STATE, false);
-    }
-
-    /**
-     * Performs a strict and comprehensive check of whether a calling package is allowed to
-     * change the state of network, as the condition differs for pre-M, M+, and
-     * privileged/preinstalled apps. If the provided uid does not match the
-     * callingPackage, a negative result will be returned. The caller is expected to have
-     * either CHANGE_NETWORK_STATE or WRITE_SETTINGS permission declared.
+     * privileged/preinstalled apps. The caller is expected to have either the
+     * CHANGE_NETWORK_STATE or the WRITE_SETTINGS permission declared. Either of these
+     * permissions allow changing network state; WRITE_SETTINGS is a runtime permission and
+     * can be revoked, but (except in M, excluding M MRs), CHANGE_NETWORK_STATE is a normal
+     * permission and cannot be revoked. See http://b/23597341
      *
-     * Note: if the check is successful, the operation of this app will be updated to the
-     * current time.
+     * Note: if the check succeeds because the application holds WRITE_SETTINGS, the operation
+     * of this app will be updated to the current time.
      * @hide
      */
     public static boolean checkAndNoteChangeNetworkStateOperation(Context context, int uid,
             String callingPackage, boolean throwException) {
+        if (context.checkCallingOrSelfPermission(android.Manifest.permission.CHANGE_NETWORK_STATE)
+                == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
         return isCallingPackageAllowedToPerformAppOpsProtectedOperation(context, uid,
                 callingPackage, throwException, AppOpsManager.OP_WRITE_SETTINGS,
                 PM_CHANGE_NETWORK_STATE, true);

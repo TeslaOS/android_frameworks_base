@@ -1462,7 +1462,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     Runnable mBackLongPress = new Runnable() {
         public void run() {
-            if (ActionUtils.killForegroundApp(mContext, mCurrentUserId)) {
+            if (!unpinActivity(false) && ActionUtils.killForegroundApp(mContext, mCurrentUserId)) {
                 performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false);
                 Toast.makeText(mContext, R.string.app_killed_message, Toast.LENGTH_SHORT).show();
             }
@@ -3137,6 +3137,19 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     + " canceled=" + canceled);
         }
 
+        // If the boot mode is power off alarm, we should not dispatch the several physical keys
+        // in power off alarm UI to avoid pausing power off alarm UI.
+        int isPowerOffAlarmMode = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.POWER_OFF_ALARM_MODE, 0);
+        if (DEBUG_INPUT) { Log.d(TAG, "intercept Dispatching isPowerOffAlarmMode = " +
+                isPowerOffAlarmMode); }
+
+        if (isPowerOffAlarmMode == 1 && (keyCode == KeyEvent.KEYCODE_HOME
+                || keyCode == KeyEvent.KEYCODE_SEARCH
+                || keyCode == KeyEvent.KEYCODE_MENU)) {
+            return -1;  // ignore the physical key here
+        }
+
         // If we think we might have a volume down & power key chord on the way
         // but we're not sure, then tell the dispatcher to wait a little while and
         // try again later before dispatching.
@@ -3475,7 +3488,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             }
             return -1;
         } else if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (CMSettings.Secure.getInt(mContext.getContentResolver(),
+            if (unpinActivity(true) || CMSettings.Secure.getInt(mContext.getContentResolver(),
                     CMSettings.Secure.KILL_APP_LONGPRESS_BACK, 0) == 1) {
                 if (down && repeatCount == 0) {
                     mHandler.postDelayed(mBackLongPress, mBackKillTimeout);
@@ -3554,7 +3567,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         // Display task switcher for ALT-TAB.
         if (down && repeatCount == 0 && keyCode == KeyEvent.KEYCODE_TAB) {
-            if (mRecentAppsHeldModifiers == 0 && !keyguardOn) {
+            if (mRecentAppsHeldModifiers == 0 && !keyguardOn && isUserSetupComplete()) {
                 final int shiftlessModifiers = event.getModifiers() & ~KeyEvent.META_SHIFT_MASK;
                 if (KeyEvent.metaStateHasModifiers(shiftlessModifiers, KeyEvent.META_ALT_ON)) {
                     mRecentAppsHeldModifiers = shiftlessModifiers;
@@ -3608,6 +3621,22 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         // Let the application handle the key.
         return 0;
+    }
+
+    private boolean unpinActivity(boolean checkOnly) {
+        if (!hasNavigationBar()) {
+            try {
+                if (ActivityManagerNative.getDefault().isInLockTaskMode()) {
+                    if (!checkOnly) {
+                        ActivityManagerNative.getDefault().stopLockTaskModeOnCurrent();
+                    }
+                    return true;
+                }
+            } catch (RemoteException e) {
+                // ignore
+            }
+        }
+        return false;
     }
 
     /** {@inheritDoc} */
@@ -5984,6 +6013,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case KeyEvent.KEYCODE_CAMERA:
             case KeyEvent.KEYCODE_FOCUS:
                 return mCameraWakeScreen;
+            case KeyEvent.KEYCODE_HOME:
+                return mHomeWakeScreen;
         }
         return true;
     }
@@ -6029,6 +6060,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case KeyEvent.KEYCODE_CAMERA:
             case KeyEvent.KEYCODE_FOCUS:
                 return mCameraWakeScreen;
+            case KeyEvent.KEYCODE_HOME:
+                return mHomeWakeScreen;
         }
         return true;
     }

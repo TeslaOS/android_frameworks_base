@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-     Copyright (C) 2012-2014 The CyanogenMod Project
+     Copyright (C) 2012-2015 The CyanogenMod Project
      Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
      Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,10 +44,6 @@
     <string name="permlab_changePhoneBlacklist">change phone blacklist</string>
     <!-- [CHAR LIMIT=NONE] Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permdesc_changePhoneBlacklist">Allows an app to change the phone numbers that are blocked for incoming calls or messages.</string>
-
-    <string name="permlab_preventpower">override power key</string>
-    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
-    <string name="permdesc_preventpower">Allows an app to override the power key.</string>
 
     <!-- label for item that opens the profile choosing dialog -->
     <string name="global_action_choose_profile">Profile</string>
@@ -95,8 +91,18 @@
     <!-- ADB notification message-->
     <string name="adb_active_generic_notification_message">Touch to disable debugging.</string>
 
+    <!-- ADB custom tile -->
+    <string name="adb_active_custom_tile">ADB - <xliff:g id="adb_type" example="Usb">%1$s</xliff:g></string>
+    <string name="adb_active_custom_tile_both">Both</string>
+    <string name="adb_active_custom_tile_usb">USB</string>
+    <string name="adb_active_custom_tile_net">Network</string>
+
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permlab_accessThemeService">access theme service</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want the application to do this. -->
+    <string name="permlab_interceptPackageLaunch">intercept app launch</string>
+
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permdesc_accessThemeService">Allows an app to access the theme service. Should never be needed for normal apps.</string>
 
@@ -139,6 +145,10 @@
     <string name="privacy_guard_notification_detail"><xliff:g id="app">%1$s</xliff:g> will not be able to access personal data</string>
     <string name="privacy_guard_dialog_title">Privacy Guard</string>
     <string name="privacy_guard_dialog_summary"><xliff:g id="app">%1$s</xliff:g> would like to <xliff:g id="op">%2$s</xliff:g>.</string>
+
+    <!-- Text of the checkbox for the permission confirmation dialog to remember the user's choice. [CHAR LIMIT=40] -->
+    <string name="permission_remember_choice">Remember</string>
+    <string name="permission">Permission</string>
 
     <!-- App ops requests -->
     <string name="app_ops_access_camera">access the camera</string>
@@ -208,4 +218,27 @@
     <string name="app_ops_wifi_change">change WiFI state</string>
     <string name="app_ops_su">get Superuser access</string>
 
+    <!-- Notify user that they are in Lock-to-app (for devices without navbar) -->
+    <string name="lock_to_app_toast_no_navbar">To unpin this screen, touch and hold the Back button.</string>
+
+    <!-- LiveDisplay strings -->
+    <string name="live_display_title" translatable="false">LiveDisplay</string>
+    <string name="live_display_auto">Automatic</string>
+    <string name="live_display_auto_summary">Automatically adjust color temperature of screen after sunset and sunrise</string>
+    <string name="live_display_off">Off</string>
+    <string name="live_display_off_summary">Disable all adjustments</string>
+    <string name="live_display_day">Day</string>
+    <string name="live_display_day_summary">Use day settings only</string>
+    <string name="live_display_night">Night</string>
+    <string name="live_display_night_summary">Use night settings only</string>
+    <string name="live_display_outdoor">Outdoor (bright sun)</string>
+    <string name="live_display_outdoor_summary">Use outdoor settings only</string>
+    <string name="live_display_hint">LiveDisplay can help reduce eyestrain and help you sleep at night. Click here to try it out!</string>
+
+    <!-- Template for showing cellular network operator name while LTE calling is enabled -->
+    <string name="high_definition_tag" translatable="false">%s</string>
+
+    <string name="tethered_notification_no_device_message">No connected device</string>
+    <string name="tethered_notification_one_device_message"><xliff:g id="count">%1$s</xliff:g> connected device</string>
+    <string name="tethered_notification_multi_device_message"><xliff:g id="count">%1$s</xliff:g> connected devices</string>
 </resources>
