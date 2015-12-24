@@ -37,6 +37,10 @@
 
     <uses-permission android:name="cyanogenmod.permission.HARDWARE_ABSTRACTION_ACCESS" />
 
+    <!-- Visualizer -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application>
         <provider android:name=".cm.SpamMessageProvider"
                   android:permission="android.permission.INTERACT_ACROSS_USERS_FULL"
@@ -49,7 +53,14 @@
             android:label="@string/lockscreen_targets_message"
             android:theme="@android:style/Theme.Material.Settings"
             android:process=":cmsettings"
-            android:exported="true">
-        </activity>
+            android:exported="true" />
+
+        <activity android:name=".tuner.TunerActivity$DemoModeActivity"
+          android:icon="@drawable/tuner"
+          android:theme="@android:style/Theme.Material.Settings"
+          android:label="@string/demo_mode"
+          android:process=":tuner"
+          android:exported="true"
+          android:permission="android.permission.STATUS_BAR" />
     </application>
 </manifest>
