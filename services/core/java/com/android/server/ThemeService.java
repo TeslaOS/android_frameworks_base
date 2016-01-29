@@ -98,6 +98,7 @@ public class ThemeService extends IThemeService.Stub {
 
     private static final String GOOGLE_SETUPWIZARD_PACKAGE = "com.google.android.setupwizard";
     private static final String TESLA_SETUPWIZARD_PACKAGE = "com.tesla.setupwizard";
+    private static final String MANAGED_PROVISIONING_PACKAGE = "com.android.managedprovisioning";
 
     private static final long MAX_ICON_CACHE_SIZE = 33554432L; // 32MB
     private static final long PURGED_ICON_CACHE_SIZE = 25165824L; // 24 MB
@@ -453,8 +454,8 @@ public class ThemeService extends IThemeService.Stub {
 
     private void doApplyDefaultTheme() {
         final ContentResolver resolver = mContext.getContentResolver();
-        final String defaultThemePkg = Settings.Secure.getString(resolver,
-                Settings.Secure.DEFAULT_THEME_PACKAGE);
+        final String defaultThemePkg = CMSettings.Secure.getString(resolver,
+                CMSettings.Secure.DEFAULT_THEME_PACKAGE);
         if (!TextUtils.isEmpty(defaultThemePkg)) {
             String defaultThemeComponents = CMSettings.Secure.getString(resolver,
                     CMSettings.Secure.DEFAULT_THEME_COMPONENTS);
@@ -661,19 +662,14 @@ public class ThemeService extends IThemeService.Stub {
         boolean success;
         success = setCustomLockScreenWallpaper(pkgName);
 
-        // TODO: uncomment once Keyguard wallpaper is re-implemented
-        /*
         if (success) {
             mContext.sendBroadcastAsUser(new Intent(Intent.ACTION_KEYGUARD_WALLPAPER_CHANGED),
                     UserHandle.ALL);
         }
-        */
         return success;
     }
 
     private boolean setCustomLockScreenWallpaper(String pkgName) {
-        // TODO: uncomment once Keyguard wallpaper is re-implemented
-        /*
         WallpaperManager wm = WallpaperManager.getInstance(mContext);
         try {
             if (SYSTEM_DEFAULT.equals(pkgName) || TextUtils.isEmpty(pkgName)) {
@@ -689,7 +685,6 @@ public class ThemeService extends IThemeService.Stub {
             Log.e(TAG, "There was an error setting lockscreen wp for pkg " + pkgName, e);
             return false;
         }
-        */
         return true;
     }
 
@@ -866,6 +861,7 @@ public class ThemeService extends IThemeService.Stub {
 
     private boolean isSetupActivity(ResolveInfo info) {
         return GOOGLE_SETUPWIZARD_PACKAGE.equals(info.activityInfo.packageName) ||
+               MANAGED_PROVISIONING_PACKAGE.equals(info.activityInfo.packageName) ||
                TESLA_SETUPWIZARD_PACKAGE.equals(info.activityInfo.packageName);
     }
 

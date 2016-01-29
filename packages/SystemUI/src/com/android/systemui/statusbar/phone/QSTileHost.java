@@ -30,6 +30,7 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.ArrayMap;
 import android.util.Log;
 
 import com.android.internal.logging.MetricsLogger;
@@ -39,6 +40,7 @@ import com.android.systemui.qs.QSTile;
 import com.android.systemui.qs.tiles.AdbOverNetworkTile;
 import com.android.systemui.qs.tiles.AirplaneModeTile;
 import com.android.systemui.qs.tiles.AmbientDisplayTile;
+import com.android.systemui.qs.tiles.BatterySaverTile;
 import com.android.systemui.qs.tiles.BluetoothTile;
 import com.android.systemui.qs.tiles.CastTile;
 import com.android.systemui.qs.tiles.CellularTile;
@@ -48,6 +50,7 @@ import com.android.systemui.qs.tiles.CustomQSTile;
 import com.android.systemui.qs.tiles.DndTile;
 import com.android.systemui.qs.tiles.EditTile;
 import com.android.systemui.qs.tiles.FlashlightTile;
+import com.android.systemui.qs.tiles.HeadsUpTile;
 import com.android.systemui.qs.tiles.HotspotTile;
 import com.android.systemui.qs.tiles.IntentTile;
 import com.android.systemui.qs.tiles.LiveDisplayTile;
@@ -294,7 +297,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
         final List<String> tileSpecs = loadTileSpecs(newValue);
         if (tileSpecs.equals(mTileSpecs)) return;
         for (Map.Entry<String, QSTile<?>> tile : mTiles.entrySet()) {
-            if (!tileSpecs.contains(tile.getKey())) {
+            if (!tileSpecs.contains(tile.getKey()) && mCustomTileData.get(tile.getKey()) == null) {
                 if (DEBUG) Log.d(TAG, "Destroying tile: " + tile.getKey());
                 tile.getValue().destroy();
             }
@@ -358,6 +361,8 @@ public class QSTileHost implements QSTile.Host, Tunable {
         else if (tileSpec.equals("lockscreen")) return  new LockscreenToggleTile(this);
         else if (tileSpec.equals("ambient_display")) return new AmbientDisplayTile(this);
         else if (tileSpec.equals("live_display")) return new LiveDisplayTile(this);
+        else if (tileSpec.equals("heads_up")) return new HeadsUpTile(this);
+        else if (tileSpec.equals("battery_saver")) return new BatterySaverTile(this);
         else if (tileSpec.startsWith(IntentTile.PREFIX)) return IntentTile.create(this,tileSpec);
         else throw new IllegalArgumentException("Bad tile spec: " + tileSpec);
     }
@@ -408,11 +413,20 @@ public class QSTileHost implements QSTile.Host, Tunable {
                 TextUtils.join(",", tiles), ActivityManager.getCurrentUser());
     }
 
+    public void initiateReset() {
+        if (mCallback != null) {
+            mCallback.resetTiles();
+        }
+    }
+
     @Override
     public void resetTiles() {
-        setEditing(false);
         CMSettings.Secure.putStringForUser(getContext().getContentResolver(),
                 CMSettings.Secure.QS_TILES, "default", ActivityManager.getCurrentUser());
+    }
+
+    public QSTile<?> getTile(String spec) {
+        return mTiles.get(spec);
     }
 
     public static int getLabelResource(String spec) {
@@ -440,6 +454,38 @@ public class QSTileHost implements QSTile.Host, Tunable {
         else if (spec.equals("lockscreen")) return R.string.quick_settings_lockscreen_label;
         else if (spec.equals("ambient_display")) return R.string.quick_settings_ambient_display_label;
         else if (spec.equals("live_display")) return R.string.live_display_title;
+        else if (spec.equals("heads_up")) return R.string.quick_settings_heads_up_label;
+        else if (spec.equals("battery_saver")) return R.string.quick_settings_battery_saver_label;
+        return 0;
+    }
+
+    public static int getIconResource(String spec) {
+        if (spec.equals("wifi")) return R.drawable.ic_qs_wifi_full_4;
+        else if (spec.equals("bt")) return R.drawable.ic_qs_bluetooth_on;
+        else if (spec.equals("inversion")) return R.drawable.ic_invert_colors_enable_animation;
+        else if (spec.equals("cell")) return R.drawable.ic_qs_signal_full_4;
+        else if (spec.equals("airplane")) return R.drawable.ic_signal_airplane_enable;
+        else if (spec.equals("dnd")) return R.drawable.ic_dnd;
+        else if (spec.equals("rotation")) return R.drawable.ic_portrait_from_auto_rotate;
+        else if (spec.equals("flashlight")) return R.drawable.ic_signal_flashlight_enable;
+        else if (spec.equals("location")) return R.drawable.ic_signal_location_enable;
+        else if (spec.equals("cast")) return R.drawable.ic_qs_cast_on;
+        else if (spec.equals("hotspot")) return R.drawable.ic_hotspot_enable;
+        else if (spec.equals("edit")) return R.drawable.ic_qs_edit_tiles;
+        else if (spec.equals("adb_network")) return R.drawable.ic_qs_network_adb_on;
+        else if (spec.equals("compass")) return R.drawable.ic_qs_compass_on;
+        else if (spec.equals("nfc")) return R.drawable.ic_qs_nfc_on;
+        else if (spec.equals("profiles")) return R.drawable.ic_qs_profiles_on;
+        else if (spec.equals("sync")) return R.drawable.ic_qs_sync_on;
+        else if (spec.equals("volume_panel")) return R.drawable.ic_qs_volume_panel;
+        else if (spec.equals("usb_tether")) return R.drawable.ic_qs_usb_tether_on;
+        else if (spec.equals("screen_timeout")) return R.drawable.ic_qs_screen_timeout_short_avd;
+        else if (spec.equals("performance")) return R.drawable.ic_qs_perf_profile;
+        else if (spec.equals("lockscreen")) return R.drawable.ic_qs_lock_screen_on;
+        else if (spec.equals("ambient_display")) return R.drawable.ic_qs_ambientdisplay_on;
+        else if (spec.equals("live_display")) return R.drawable.ic_livedisplay_auto;
+        else if (spec.equals("heads_up")) return R.drawable.ic_qs_heads_up_on;
+        else if (spec.equals("battery_saver")) return R.drawable.ic_qs_battery_saver_on;
         return 0;
     }
 
@@ -479,7 +525,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
         }
     }
 
-    CustomTileData getCustomTileData() {
+    public CustomTileData getCustomTileData() {
         return mCustomTileData;
     }
 }

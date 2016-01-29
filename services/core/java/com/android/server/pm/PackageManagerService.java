@@ -336,6 +336,7 @@ public class PackageManagerService extends IPackageManager.Stub {
     private static final boolean DEBUG_DEXOPT = false;
     private static final boolean DEBUG_ABI_SELECTION = false;
     private static final boolean DEBUG_PREBUNDLED_SCAN = false;
+    private static final boolean DEBUG_PROTECTED = false;
 
     static final boolean CLEAR_RUNTIME_PERMISSIONS_ON_UPGRADE = false;
 
@@ -1895,7 +1896,9 @@ public class PackageManagerService extends IPackageManager.Stub {
         mContext = context;
         mFactoryTest = factoryTest;
         mOnlyCore = onlyCore;
-        mLazyDexOpt = "eng".equals(SystemProperties.get("ro.build.type"));
+        mLazyDexOpt = "eng".equals(SystemProperties.get("ro.build.type")) ||
+                ("userdebug".equals(SystemProperties.get("ro.build.type")) &&
+                SystemProperties.getBoolean("persist.sys.lazy.dexopt", false));
         mMetrics = new DisplayMetrics();
         mSettings = new Settings(mPackages);
         mSettings.addSharedUserLPw("android.uid.system", Process.SYSTEM_UID,
@@ -8264,8 +8267,12 @@ public class PackageManagerService extends IPackageManager.Stub {
         }
 
         boolean hasCommonResources = (hasCommonResources(pkg) && !COMMON_OVERLAY.equals(target));
+        PackageParser.Package targetPkg = mPackages.get(target);
+        String appPath = targetPkg != null ? targetPkg.baseCodePath : "";
+
         if (mInstaller.aapt(pkg.baseCodePath, internalPath, resPath, sharedGid, pkgId,
                 pkg.applicationInfo.targetSdkVersion,
+                appPath,
                 hasCommonResources ? ThemeUtils.getTargetCacheDir(COMMON_OVERLAY, pkg)
                         + File.separator + "resources.apk" : "") != 0) {
             throw new AaptException("Failed to run aapt");
@@ -8279,7 +8286,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         if (mInstaller.aapt(pkg.baseCodePath, APK_PATH_TO_ICONS, resPath, sharedGid,
                 Resources.THEME_ICON_PKG_ID,
                 pkg.applicationInfo.targetSdkVersion,
-                "") != 0) {
+                "", "") != 0) {
             throw new AaptException("Failed to run aapt");
         }
     }
@@ -8417,25 +8424,34 @@ public class PackageManagerService extends IPackageManager.Stub {
 
     private void setUpCustomResolverActivity(PackageParser.Package pkg) {
         synchronized (mPackages) {
-            mResolverReplaced = true;
-            // Set up information for custom user intent resolution activity.
-            mResolveActivity.applicationInfo = pkg.applicationInfo;
-            mResolveActivity.name = mCustomResolverComponentName.getClassName();
-            mResolveActivity.packageName = pkg.applicationInfo.packageName;
-            mResolveActivity.processName = pkg.applicationInfo.packageName;
-            mResolveActivity.launchMode = ActivityInfo.LAUNCH_MULTIPLE;
-            mResolveActivity.flags = ActivityInfo.FLAG_EXCLUDE_FROM_RECENTS |
-                    ActivityInfo.FLAG_FINISH_ON_CLOSE_SYSTEM_DIALOGS;
-            mResolveActivity.theme = 0;
-            mResolveActivity.exported = true;
-            mResolveActivity.enabled = true;
-            mResolveInfo.activityInfo = mResolveActivity;
-            mResolveInfo.priority = 0;
-            mResolveInfo.preferredOrder = 0;
-            mResolveInfo.match = 0;
-            mResolveComponentName = mCustomResolverComponentName;
-            Slog.i(TAG, "Replacing default ResolverActivity with custom activity: " +
-                    mResolveComponentName);
+            for (Activity a : pkg.activities) {
+                if (a.getComponentName().getClassName()
+                        .equals(mCustomResolverComponentName.getClassName())) {
+                    mResolverReplaced = true;
+                    // Set up information for custom user intent resolution activity.
+                    mResolveActivity.applicationInfo = pkg.applicationInfo;
+                    mResolveActivity.name = mCustomResolverComponentName.getClassName();
+                    mResolveActivity.packageName = pkg.applicationInfo.packageName;
+                    mResolveActivity.processName = pkg.applicationInfo.packageName;
+                    mResolveActivity.launchMode = ActivityInfo.LAUNCH_MULTIPLE;
+                    mResolveActivity.flags = ActivityInfo.FLAG_EXCLUDE_FROM_RECENTS |
+                            ActivityInfo.FLAG_FINISH_ON_CLOSE_SYSTEM_DIALOGS;
+                    mResolveActivity.theme = a.info.theme;
+                    mResolveActivity.exported = true;
+                    mResolveActivity.enabled = true;
+                    mResolveInfo.activityInfo = mResolveActivity;
+                    mResolveInfo.priority = 0;
+                    mResolveInfo.preferredOrder = 0;
+                    mResolveInfo.match = 0;
+                    mResolveComponentName = mCustomResolverComponentName;
+                    Slog.i(TAG, "Replacing default ResolverActivity with custom activity: " +
+                            mResolveComponentName);
+                    break;
+                }
+            }
+            if (mResolveActivity.theme == 0) {
+                mResolveActivity.theme = R.style.Theme_DeviceDefault_Resolver;
+            }
         }
     }
 
@@ -10265,8 +10281,8 @@ public class PackageManagerService extends IPackageManager.Stub {
         Bundle extras = new Bundle(1);
         extras.putInt(Intent.EXTRA_UID, UserHandle.getUid(userId, pkgSetting.appId));
 
-        sendPackageBroadcast(Intent.ACTION_PACKAGE_ADDED, null,
-                packageName, extras, null, null, new int[] {userId});
+        sendPackageBroadcast(Intent.ACTION_PACKAGE_ADDED, packageName,
+                null, extras, null, null, new int[] {userId});
         try {
             IActivityManager am = ActivityManagerNative.getDefault();
             final boolean isSystem =
@@ -17181,6 +17197,53 @@ public class PackageManagerService extends IPackageManager.Stub {
             int packageUid = UserHandle.getUid(userId, pkgSetting.appId);
         } finally {
             Binder.restoreCallingIdentity(callingId);
+        }
+    }
+
+    @Override
+    public boolean isComponentProtected(String callingPackage,
+            ComponentName componentName, int userId) {
+        if (DEBUG_PROTECTED) Log.d(TAG, "Checking if component is protected "
+                + componentName.flattenToShortString() + " from calling package " + callingPackage);
+        enforceCrossUserPermission(Binder.getCallingUid(), userId, false, false, "set protected");
+
+        //Allow managers full access
+        List<String> protectedComponentManagers =
+                CMSettings.Secure.getDelimitedStringAsList(mContext.getContentResolver(),
+                        CMSettings.Secure.PROTECTED_COMPONENT_MANAGERS, "|");
+        if (protectedComponentManagers.contains(callingPackage)) {
+            if (DEBUG_PROTECTED) Log.d(TAG, "Calling package is a protected manager, allow");
+            return false;
+        }
+
+        String packageName = componentName.getPackageName();
+        String className = componentName.getClassName();
+
+        //If this component is launched from the same package, allow it.
+        if (TextUtils.equals(packageName, callingPackage)) {
+            if (DEBUG_PROTECTED) Log.d(TAG, "Calling package is same as target, allow");
+            return false;
+        }
+
+        PackageSetting pkgSetting;
+        ArraySet<String> components;
+
+        synchronized (mPackages) {
+            pkgSetting = mSettings.mPackages.get(packageName);
+
+            if (pkgSetting == null) {
+                if (className == null) {
+                    throw new IllegalArgumentException(
+                            "Unknown package: " + packageName);
+                }
+                throw new IllegalArgumentException(
+                        "Unknown component: " + packageName
+                                + "/" + className);
+            }
+            // Get all the protected components
+            components = pkgSetting.getProtectedComponents(userId);
+            if (DEBUG_PROTECTED) Log.d(TAG, "Got " + components.size() + " protected components");
+            return components.size() > 0;
         }
     }
 

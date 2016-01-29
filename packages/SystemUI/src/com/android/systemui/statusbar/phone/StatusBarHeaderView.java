@@ -56,7 +56,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.internal.logging.MetricsConstants;
 import com.android.keyguard.KeyguardStatusView;
 import com.android.systemui.BatteryLevelTextView;
 import com.android.systemui.BatteryMeterView;
@@ -79,6 +78,7 @@ import java.text.NumberFormat;
 
 import cyanogenmod.app.StatusBarPanelCustomTile;
 import cyanogenmod.providers.CMSettings;
+import org.cyanogenmod.internal.logging.CMMetricsLogger;
 
 /**
  * The view to manage the header area in the expanded status bar.
@@ -161,11 +161,16 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     private SettingsObserver mSettingsObserver;
     private boolean mShowWeather;
     private boolean mShowBatteryTextExpanded;
+
+    private QSTile.DetailAdapter mEditingDetailAdapter;
     private boolean mEditing;
 
     private ImageView mBackgroundImage;
     private Drawable mCurrentBackground;
     private float mLastHeight;
+
+    private UserInfoController mUserInfoController;
+
 
     public StatusBarHeaderView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -236,9 +241,18 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 
         // RenderThread is doing more harm than good when touching the header (to expand quick
         // settings), so disable it for this view
-        ((RippleDrawable) getBackground()).setForceSoftware(true);
-        ((RippleDrawable) mSettingsButton.getBackground()).setForceSoftware(true);
-        ((RippleDrawable) mSystemIconsSuperContainer.getBackground()).setForceSoftware(true);
+        Drawable d = getBackground();
+        if (d instanceof RippleDrawable) {
+            ((RippleDrawable) d).setForceSoftware(true);
+        }
+        d = mSettingsButton.getBackground();
+        if (d instanceof RippleDrawable) {
+            ((RippleDrawable) d).setForceSoftware(true);
+        }
+        d = mSystemIconsSuperContainer.getBackground();
+        if (d instanceof RippleDrawable) {
+            ((RippleDrawable) d).setForceSoftware(true);
+        }
     }
 
     @Override
@@ -276,6 +290,15 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         mClockCollapsedScaleFactor = (float) mClockCollapsedSize / (float) mClockExpandedSize;
         updateClockScale();
         updateClockCollapsedMargin();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (mUserInfoController != null) {
+            mUserInfoController.removeListener(mUserInfoChangedListener);
+        }
+        setListening(false);
     }
 
     private void updateClockCollapsedMargin() {
@@ -569,13 +592,17 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         invalidateOutline();
     }
 
+    private UserInfoController.OnUserInfoChangedListener mUserInfoChangedListener =
+            new UserInfoController.OnUserInfoChangedListener() {
+        @Override
+        public void onUserInfoChanged(String name, Drawable picture) {
+            mMultiUserAvatar.setImageDrawable(picture);
+        }
+    };
+
     public void setUserInfoController(UserInfoController userInfoController) {
-        userInfoController.addListener(new UserInfoController.OnUserInfoChangedListener() {
-            @Override
-            public void onUserInfoChanged(String name, Drawable picture) {
-                mMultiUserAvatar.setImageDrawable(picture);
-            }
-        });
+        mUserInfoController = userInfoController;
+        userInfoController.addListener(mUserInfoChangedListener);
     }
 
     @Override
@@ -767,13 +794,8 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 
     public void setEditing(boolean editing) {
         mEditing = editing;
-        if (mEditing) {
-            mQsPanelCallback.onShowingDetail(new QSTile.DetailAdapter() {
-                @Override
-                public StatusBarPanelCustomTile getCustomTile() {
-                    return null;
-                }
-
+        if (mEditingDetailAdapter == null) {
+            mEditingDetailAdapter = new QSTile.DetailAdapter() {
                 @Override
                 public int getTitle() {
                     return R.string.quick_settings_edit_label;
@@ -795,18 +817,23 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
                 }
 
                 @Override
+                public StatusBarPanelCustomTile getCustomTile() {
+                    return null;
+                }
+
+                @Override
                 public void setToggleState(boolean state) {
 
                 }
 
                 @Override
                 public int getMetricsCategory() {
-                    return MetricsConstants.DONT_TRACK_ME_BRO;
+                    return CMMetricsLogger.DONT_LOG;
                 }
-            });
-        } else {
-            mQsPanelCallback.onShowingDetail(null);
+            };
         }
+        mQsPanelCallback.onShowingDetail(mEditing ? mEditingDetailAdapter : null);
+        updateEverything();
     }
 
     /**
@@ -885,7 +912,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             post(new Runnable() {
                 @Override
                 public void run() {
-                    handleShowingDetail(detail);
+                    handleShowingDetail(mEditing && detail == null ? mEditingDetailAdapter : detail);
                 }
             });
         }
