@@ -594,6 +594,9 @@ import com.android.systemui.statusbar.policy.UserInfoController;
     public void setUserInfoController(UserInfoController userInfoController) {
         mUserInfoController = userInfoController;
         userInfoController.addListener(mUserInfoChangedListener);
+        if (mMultiUserSwitch != null) {
+            mMultiUserSwitch.setUserInfoController(mUserInfoController);
+        }
     }
 
     @Override
@@ -604,8 +607,8 @@ import com.android.systemui.statusbar.policy.UserInfoController;
             startBatteryActivity();
         } else if (v == mAlarmStatus && mNextAlarm != null) {
             PendingIntent showIntent = mNextAlarm.getShowIntent();
-            if (showIntent != null && showIntent.isActivity()) {
-                mActivityStarter.startActivity(showIntent.getIntent(), true /* dismissShade */);
+            if (showIntent != null) {
+                mActivityStarter.startPendingIntentDismissingKeyguard(showIntent);
             }
         } else if (v == mClock) {
             startClockActivity();
