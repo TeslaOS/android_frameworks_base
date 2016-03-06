@@ -232,6 +232,7 @@ public class NotificationPanelView extends PanelView implements
     private ComponentName mThirdPartyKeyguardViewComponent;
     private KeyguardExternalView mKeyguardExternalView;
     private CmLockPatternUtils mLockPatternUtils;
+    private boolean mLiveLockScreenEnabled;
 
     private Runnable mHeadsUpExistenceChangedRunnable = new Runnable() {
         @Override
@@ -319,7 +320,7 @@ public class NotificationPanelView extends PanelView implements
         });
 
         mLockPatternUtils = new CmLockPatternUtils(getContext());
-        if (mLockPatternUtils.isThirdPartyKeyguardEnabled()) {
+        if (mLockPatternUtils.isThirdPartyKeyguardEnabled() && mLiveLockScreenEnabled) {
             mThirdPartyKeyguardViewComponent = mLockPatternUtils.getThirdPartyKeyguardComponent();
         }
     }
@@ -1113,7 +1114,8 @@ public class NotificationPanelView extends PanelView implements
                 mAfforanceHelper.updatePreviews();
             }
         }
-        if (keyguardShowing) {
+        if (statusBarState == StatusBarState.KEYGUARD ||
+                statusBarState == StatusBarState.SHADE_LOCKED) {
             updateDozingVisibilities(false /* animate */);
             if (mThirdPartyKeyguardViewComponent != null) {
                 if (mKeyguardExternalView == null) {
@@ -1234,7 +1236,8 @@ public class NotificationPanelView extends PanelView implements
                         @Override
                         public void run() {
                             mStatusBar.showKeyguard();
-                            mStatusBar.startActivity(intent, true);
+                            mStatusBar.startActivityDismissingKeyguard(intent, false, true, true,
+                                    null);
                         }
                     });
                 }
@@ -2537,7 +2540,7 @@ public class NotificationPanelView extends PanelView implements
      * @param x the x-coordinate the touch event
      */
     private void updateVerticalPanelPosition(float x) {
-        if (mNotificationStackScroller.getWidth() * 1.75f > getWidth()) {
+        if (mNotificationStackScroller.getWidth() * 1.75f >= getWidth()) {
             resetVerticalPanelPosition();
             return;
         }
@@ -2590,6 +2593,8 @@ public class NotificationPanelView extends PanelView implements
                     CMSettings.System.STATUS_BAR_QUICK_QS_PULLDOWN), false, this);
             resolver.registerContentObserver(CMSettings.System.getUriFor(
                     CMSettings.System.DOUBLE_TAP_SLEEP_GESTURE), false, this);
+            resolver.registerContentObserver(CMSettings.Secure.getUriFor(
+                    CMSettings.Secure.LIVE_LOCK_SCREEN_ENABLED), false, this);
             update();
         }
 
@@ -2614,6 +2619,13 @@ public class NotificationPanelView extends PanelView implements
                     resolver, CMSettings.System.STATUS_BAR_QUICK_QS_PULLDOWN, 1);
             mDoubleTapToSleepEnabled = CMSettings.System.getInt(
                     resolver, CMSettings.System.DOUBLE_TAP_SLEEP_GESTURE, 1) == 1;
+
+            boolean liveLockScreenEnabled = CMSettings.Secure.getInt(
+                    resolver, CMSettings.Secure.LIVE_LOCK_SCREEN_ENABLED, 0) == 1;
+            if (liveLockScreenEnabled != mLiveLockScreenEnabled) {
+                mLiveLockScreenEnabled = liveLockScreenEnabled;
+                updateExternalKeyguardView();
+            }
         }
     }
 
@@ -2707,7 +2719,8 @@ public class NotificationPanelView extends PanelView implements
     }
 
     private void updateExternalKeyguardView() {
-        ComponentName cn = mLockPatternUtils.getThirdPartyKeyguardComponent();
+        ComponentName cn = mLiveLockScreenEnabled ?
+                mLockPatternUtils.getThirdPartyKeyguardComponent() : null;
         // If mThirdPartyKeyguardViewComponent differs from cn, go ahead and update
         if (!Objects.equals(mThirdPartyKeyguardViewComponent, cn)) {
             mThirdPartyKeyguardViewComponent = cn;

@@ -603,6 +603,9 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     public void setUserInfoController(UserInfoController userInfoController) {
         mUserInfoController = userInfoController;
         userInfoController.addListener(mUserInfoChangedListener);
+        if (mMultiUserSwitch != null) {
+            mMultiUserSwitch.setUserInfoController(mUserInfoController);
+        }
     }
 
     @Override
@@ -794,7 +797,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 
     public void setEditing(boolean editing) {
         mEditing = editing;
-        if (mEditingDetailAdapter == null) {
+        if (editing && mEditingDetailAdapter == null) {
             mEditingDetailAdapter = new QSTile.DetailAdapter() {
                 @Override
                 public int getTitle() {

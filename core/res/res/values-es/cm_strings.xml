@@ -28,7 +28,6 @@
   <string name="permdesc_readPhoneBlacklist">Permite que la aplicación lea la información sobre los números de teléfono bloqueados para llamadas o mensajes entrantes.</string>
   <string name="permlab_changePhoneBlacklist">cambiar la lista negra del teléfono</string>
   <string name="permdesc_changePhoneBlacklist">Permite que la aplicación cambie los números de teléfono bloqueados de llamadas o mensajes entrantes.</string>
-  <string name="global_action_choose_profile">Perfil</string>
   <string name="permlab_setKeyguardWallpaper">establecer fondo de pantalla de bloqueo</string>
   <string name="permdesc_setKeyguardWallpaper">Permite que la aplicación establezca el fondo de pantalla de bloqueo.</string>
   <string name="global_action_reboot">Reiniciar</string>
@@ -50,18 +49,8 @@
   <string name="adb_active_custom_tile_both">USB y red</string>
   <string name="adb_active_custom_tile_usb">USB</string>
   <string name="adb_active_custom_tile_net">Red</string>
-  <string name="permlab_accessThemeService">acceso al servicio de temas</string>
   <string name="permlab_interceptPackageLaunch">interceptar la ejecución de aplicaciones</string>
-  <string name="permdesc_accessThemeService">Permite que la aplicación acceda al servicio de temas. Nunca debería ser necesario para aplicaciones normales.</string>
-  <string name="permlab_readThemes">leer información de los temas</string>
-  <string name="permdesc_readThemesDesc">Permite que la aplicación lea los temas instalados y determine cual es el que has aplicado.</string>
-  <string name="permlab_writeThemes">modificar los temas</string>
-  <string name="permdesc_writeThemesDesc">Permite que la aplicación añada nuevos temas y modifique el tema aplicado actualmente.</string>
-  <string name="theme_install_error_title">Error al instalar el tema</string>
-  <string name="theme_install_error_message">Error al instalar %s</string>
   <string name="stylus_app_not_installed">%s no está instalada</string>
-  <string name="theme_reset_notification_title">Tema restablecido</string>
-  <string name="theme_reset_notification_body">Tema del sistema restablecido debido a múltiples cierres de la aplicación.</string>
   <string name="silent_mode_priority">Prioridad</string>
   <string name="silent_mode_none">Ninguno</string>
   <string name="subscription_change_disabled_wifi_ap">Zona Wi-Fi desactivada debido a un cambio de suscripción en la SIM</string>
@@ -108,7 +97,6 @@
   <string name="app_ops_start_at_bootup">ejecutar al inicio</string>
   <string name="app_ops_toast_window">mostrar notificaciones emergentes</string>
   <string name="app_ops_toggle_bluetooth">alternar Bluetooth</string>
-  <string name="app_ops_toggle_mobile_data">alternar datos móviles</string>
   <string name="app_ops_toggle_nfc">alternar NFC</string>
   <string name="app_ops_toggle_wifi">alternar Wi-Fi</string>
   <string name="app_ops_use_alarm_volume">controlar el volumen de la alarma</string>

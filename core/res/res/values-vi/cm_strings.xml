@@ -28,7 +28,6 @@
   <string name="permdesc_readPhoneBlacklist">Cho phép ứng dụng đọc thông tin về các số điện thoại bị chặn cuộc gọi hoặc tin nhắn đến.</string>
   <string name="permlab_changePhoneBlacklist">thay đổi danh sách đen của điện thoại</string>
   <string name="permdesc_changePhoneBlacklist">Cho phép ứng dụng thay đổi số điện thoại bị chặn cuộc gọi hoặc tin nhắn đến.</string>
-  <string name="global_action_choose_profile">Cấu hình</string>
   <string name="permlab_setKeyguardWallpaper">thiết lập hình nền bảo vệ phím</string>
   <string name="permdesc_setKeyguardWallpaper">Cho phép ứng dụng thay đổi hình nền màn hình khoá.</string>
   <string name="global_action_reboot">Khởi động lại</string>
@@ -50,18 +49,8 @@
   <string name="adb_active_custom_tile_both">USB &amp; mạng</string>
   <string name="adb_active_custom_tile_usb">USB</string>
   <string name="adb_active_custom_tile_net">Mạng</string>
-  <string name="permlab_accessThemeService">truy cập dịch vụ chủ đề</string>
   <string name="permlab_interceptPackageLaunch">chặn ứng dụng khởi chạy</string>
-  <string name="permdesc_accessThemeService">Cho phép ứng dụng truy cập dịch vụ chủ đề. Ứng dụng bình thường không bao giờ cần quyền này.</string>
-  <string name="permlab_readThemes">đọc thông tin chủ đề của bạn</string>
-  <string name="permdesc_readThemesDesc">Cho phép ứng dụng đọc và xác định chủ đề nào bạn đã áp dụng.</string>
-  <string name="permlab_writeThemes">sửa đổi chủ đề của bạn</string>
-  <string name="permdesc_writeThemesDesc">Cho phép ứng dụng chèn các chủ đề mới và sửa đổi chủ đề bạn đã áp dụng.</string>
-  <string name="theme_install_error_title">Không thể cài đặt chủ đề</string>
-  <string name="theme_install_error_message">Không thể cài đặt %s</string>
   <string name="stylus_app_not_installed">%s chưa được cài đặt</string>
-  <string name="theme_reset_notification_title">Đặt lại chủ đề</string>
-  <string name="theme_reset_notification_body">Đã khôi phục chủ đề hệ thống vì nhiều ứng dụng bị lỗi.</string>
   <string name="silent_mode_priority">Ưu tiên</string>
   <string name="silent_mode_none">Không có</string>
   <string name="subscription_change_disabled_wifi_ap">Đã vô hiệu hóa điểm truy cập WiFi vì thay đổi đăng ký SIM</string>
@@ -108,7 +97,6 @@
   <string name="app_ops_start_at_bootup">chạy lúc khởi động</string>
   <string name="app_ops_toast_window">hiện thông báo nhanh</string>
   <string name="app_ops_toggle_bluetooth">bật/tắt Bluetooth</string>
-  <string name="app_ops_toggle_mobile_data">bật/tắt dữ liệu di động</string>
   <string name="app_ops_toggle_nfc">bật/tắt NFC</string>
   <string name="app_ops_use_alarm_volume">điều khiển âm lượng báo thức</string>
   <string name="app_ops_use_audio_focus">điều khiển trọng tâm âm thanh</string>

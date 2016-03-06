@@ -28,7 +28,6 @@
   <string name="permdesc_readPhoneBlacklist">السماح للتطبيق بقراءة المعلومات الخاصة بأرقام الهاتف المحظورة بالنبسة للمكالمات أو الرسائل الواردة.</string>
   <string name="permlab_changePhoneBlacklist">تغيير القائمة السوداء للهاتف</string>
   <string name="permdesc_changePhoneBlacklist">السماح للتطبيق بتغيير أرقام الهاتف التي يتم حظر للمكالمات الواردة أو الرسائل.</string>
-  <string name="global_action_choose_profile">ملف تعريف</string>
   <string name="permlab_setKeyguardWallpaper">تعيين خلفية شاشة الحارس الرئيسي</string>
   <string name="permdesc_setKeyguardWallpaper">السماج للتطبيق بتغيير خلفية شاشة التأمين.</string>
   <string name="global_action_reboot">إعادة تمهيد</string>
@@ -50,19 +49,8 @@
   <string name="adb_active_custom_tile_both">⁯USB &amp; الشبكة</string>
   <string name="adb_active_custom_tile_usb">USB</string>
   <string name="adb_active_custom_tile_net">الشبكة</string>
-  <string name="permlab_accessThemeService">الوصول إلى خدمة السمة</string>
   <string name="permlab_interceptPackageLaunch">مقاطعة تشغيل التطبيق</string>
-  <string name="permdesc_accessThemeService">يسمح للتطبيق بالوصول إلى خدمة السمة. ينبغي أن لا تكون ضرورية ابدأ للتطبيقات العادية.</string>
-  <string name="permlab_readThemes">قراءة معلومات السمة لديك</string>
-  <string name="permdesc_readThemesDesc">يسمح للتطبيق بقراءة السمات الخاصة بك وتحديد السمة التي قمت بتطبيقها.</string>
-  <string name="permlab_writeThemes">تعديل السمات الخاصة بك</string>
-  <string name="permdesc_writeThemesDesc">السماح للتطبيق بإدخال سمات جديدة
-وتعديل السمة التي قمت بتطبيقها.</string>
-  <string name="theme_install_error_title">فشل تثبيت السمة</string>
-  <string name="theme_install_error_message">فشل تثبيت %s</string>
   <string name="stylus_app_not_installed">%s لم يتم تثبيته</string>
-  <string name="theme_reset_notification_title">إعادة تعيين السمة</string>
-  <string name="theme_reset_notification_body">تم استرداد سمة النظام بسبب عمليات تعطيل متعددة للتطبيق.</string>
   <string name="silent_mode_priority">الأولوية</string>
   <string name="silent_mode_none">بلا</string>
   <string name="subscription_change_disabled_wifi_ap">ايقاف بث تقنية واي فاي بسبب تغيير اشتراك SIM</string>
@@ -109,7 +97,6 @@
   <string name="app_ops_start_at_bootup">البدء في التشغيل</string>
   <string name="app_ops_toast_window">عرض الإعلامات المنبثقة</string>
   <string name="app_ops_toggle_bluetooth">تبديل بلوتوث</string>
-  <string name="app_ops_toggle_mobile_data">تبديل البيانات المتنقلة</string>
   <string name="app_ops_toggle_nfc">تبديل NFC</string>
   <string name="app_ops_use_alarm_volume">التحكم في مستوى صوت الإنذار</string>
   <string name="app_ops_use_audio_focus">التحكم في تركيز الصوت</string>

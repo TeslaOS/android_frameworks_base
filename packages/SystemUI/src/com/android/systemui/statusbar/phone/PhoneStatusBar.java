@@ -45,7 +45,6 @@ import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
-import android.content.res.ThemeChangeRequest.RequestType;
 import android.content.res.ThemeConfig;
 import android.content.res.Resources;
 import android.database.ContentObserver;
@@ -200,6 +199,7 @@ import com.android.systemui.statusbar.stack.NotificationStackScrollLayout.OnChil
 import com.android.systemui.statusbar.stack.StackStateAnimator;
 import com.android.systemui.statusbar.stack.StackViewState;
 import com.android.systemui.volume.VolumeComponent;
+import cyanogenmod.app.CMContextConstants;
 import cyanogenmod.app.CustomTileListenerService;
 import cyanogenmod.app.StatusBarPanelCustomTile;
 
@@ -228,6 +228,7 @@ import static com.android.systemui.statusbar.phone.BarTransitions.MODE_TRANSPARE
 import static com.android.systemui.statusbar.phone.BarTransitions.MODE_WARNING;
 
 import cyanogenmod.providers.CMSettings;
+import cyanogenmod.themes.IThemeService;
 
 public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         DragDownHelper.DragDownCallback, ActivityStarter, OnUnlockMethodChangedListener,
@@ -253,7 +254,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private static final int MSG_CLOSE_PANELS = 1001;
     private static final int MSG_OPEN_SETTINGS_PANEL = 1002;
     private static final int MSG_LAUNCH_TRANSITION_TIMEOUT = 1003;
-    private static final int MSG_UPDATE_NOTIFICATIONS = 1004;
     // 1020-1040 reserved for BaseStatusBar
 
     // Time after we abort the launch transition.
@@ -446,6 +446,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     private int mNavigationIconHints = 0;
     private HandlerThread mHandlerThread;
+
+    private IThemeService mThemeService;
+    private long mLastThemeChangeTime = 0;
 
     Runnable mLongPressBrightnessChange = new Runnable() {
         @Override
@@ -1007,6 +1010,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mScreenPinningRequest = new ScreenPinningRequest(mContext);
 
         updateCustomRecentsLongPressHandler(true);
+
+        mThemeService = IThemeService.Stub.asInterface(ServiceManager.getService(
+                CMContextConstants.CM_THEME_SERVICE));
     }
 
     // ================================================================================
@@ -1463,6 +1469,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_KEYGUARD_WALLPAPER_CHANGED);
+        filter.addAction(cyanogenmod.content.Intent.ACTION_SCREEN_CAMERA_GESTURE);
         context.registerReceiverAsUser(mBroadcastReceiver, UserHandle.ALL, filter, null, null);
 
         IntentFilter demoFilter = new IntentFilter();
@@ -2091,18 +2098,12 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         return entry.row.getParent() instanceof NotificationStackScrollLayout;
     }
 
-    private void handleUpdateNotifications() {
+    @Override
+    protected void updateNotifications() {
         mNotificationData.filterAndSort();
 
         updateNotificationShade();
         mIconController.updateNotificationIcons(mNotificationData);
-    }
-
-    @Override
-    protected void updateNotifications() {
-        if (!mHandler.hasMessages(MSG_UPDATE_NOTIFICATIONS)) {
-            mHandler.sendEmptyMessage(MSG_UPDATE_NOTIFICATIONS);
-        }
     }
 
     @Override
@@ -2335,6 +2336,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         boolean keyguardVisible = (mState != StatusBarState.SHADE);
 
+        // HACK: Consider keyguard as visible if showing sim pin security screen
+        KeyguardUpdateMonitor updateMonitor = KeyguardUpdateMonitor.getInstance(mContext);
+        boolean keyguardVisible = mState != StatusBarState.SHADE || updateMonitor.isSimPinSecure();
+
         if (!mKeyguardFadingAway && keyguardVisible && backdropBitmap != null && mScreenOn) {
             // if there's album art, ensure visualizer is visible
             mVisualizerView.setVisible(true);
@@ -2342,10 +2347,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     && mMediaController.getPlaybackState() != null
                     && mMediaController.getPlaybackState().getState()
                             == PlaybackState.STATE_PLAYING);
-        }
-
-        if (backdropBitmap == null && mMediaMetadata == null) {
-            backdropBitmap = mKeyguardWallpaper;
         }
 
         if (keyguardVisible) {
@@ -2761,9 +2762,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     break;
                 case MSG_LAUNCH_TRANSITION_TIMEOUT:
                     onLaunchTransitionTimeout();
-                    break;
-                case MSG_UPDATE_NOTIFICATIONS:
-                    handleUpdateNotifications();
                     break;
             }
         }
@@ -3614,10 +3612,16 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     public void startActivityDismissingKeyguard(final Intent intent, boolean onlyProvisioned,
             final boolean dismissShade, final Callback callback) {
-        if (onlyProvisioned && !isDeviceProvisioned()) return;
-
         final boolean afterKeyguardGone = PreviewInflater.wouldLaunchResolverActivity(
                 mContext, intent, mCurrentUserId);
+        startActivityDismissingKeyguard(intent, onlyProvisioned, dismissShade, afterKeyguardGone,
+                callback);
+    }
+
+    public void startActivityDismissingKeyguard(final Intent intent, boolean onlyProvisioned,
+            final boolean dismissShade, final boolean afterKeyguardGone, final Callback callback) {
+        if (onlyProvisioned && !isDeviceProvisioned()) return;
+
         final boolean keyguardShowing = mStatusBarKeyguardViewManager.isShowing();
         Runnable runnable = new Runnable() {
             public void run() {
@@ -3716,6 +3720,17 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                         Context.WALLPAPER_SERVICE);
                 mKeyguardWallpaper = wm.getKeyguardBitmap();
                 updateMediaMetaData(true);
+            } else if (cyanogenmod.content.Intent.ACTION_SCREEN_CAMERA_GESTURE.equals(action)) {
+                boolean userSetupComplete = Settings.Secure.getInt(mContext.getContentResolver(),
+                        Settings.Secure.USER_SETUP_COMPLETE, 0) != 0;
+                if (!userSetupComplete) {
+                    if (DEBUG) Log.d(TAG, String.format(
+                            "userSetupComplete = %s, ignoring camera launch gesture.",
+                            userSetupComplete));
+                    return;
+                }
+
+                onCameraLaunchGestureDetected(StatusBarManager.CAMERA_LAUNCH_SOURCE_SCREEN_GESTURE);
             }
         }
     };
@@ -3983,6 +3998,13 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             // this will make sure the keyguard is showing
             showKeyguard();
         }
+
+        // update mLastThemeChangeTime
+        try {
+            mLastThemeChangeTime = mThemeService.getLastThemeChangeTime();
+        } catch (RemoteException e) {
+            /* ignore */
+        }
     }
 
     private void removeAllViews(ViewGroup parent) {
@@ -4036,8 +4058,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     /**
      * Determines if we need to recreate the status bar due to a theme change.  We currently
-     * check if the overlay for the status bar, fonts, or icons, or forced update count have
-     * changed.
+     * check if the overlay for the status bar, fonts, or icons, or last theme change time is
+     * greater than mLastThemeChangeTime
      *
      * @param oldTheme
      * @param newTheme
@@ -4050,17 +4072,24 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         final String overlay = newTheme.getOverlayForStatusBar();
         final String icons = newTheme.getIconPackPkgName();
         final String fonts = newTheme.getFontPkgName();
+        boolean isNewThemeChange = false;
+        try {
+            isNewThemeChange = mLastThemeChangeTime < mThemeService.getLastThemeChangeTime();
+        } catch (RemoteException e) {
+            /* ignore */
+        }
 
         return oldTheme == null ||
                 (overlay != null && !overlay.equals(oldTheme.getOverlayForStatusBar()) ||
                 (fonts != null && !fonts.equals(oldTheme.getFontPkgName())) ||
                 (icons != null && !icons.equals(oldTheme.getIconPackPkgName())) ||
-                newTheme.getLastThemeChangeRequestType() == RequestType.THEME_UPDATED);
+                isNewThemeChange);
     }
 
     /**
      * Determines if we need to update the navbar resources due to a theme change.  We currently
-     * check if the overlay for the navbar, or request type is {@link RequestType.THEME_UPDATED}.
+     * check if the overlay for the navbar, or last theme change time is greater than
+     * mLastThemeChangeTime
      *
      * @param oldTheme
      * @param newTheme
@@ -4071,10 +4100,16 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         if (newTheme == null) return false;
 
         final String overlay = newTheme.getOverlayForNavBar();
+        boolean isNewThemeChange = false;
+        try {
+            isNewThemeChange = mLastThemeChangeTime < mThemeService.getLastThemeChangeTime();
+        } catch (RemoteException e) {
+            /* ignore */
+        }
 
         return oldTheme == null ||
                 (overlay != null && !overlay.equals(oldTheme.getOverlayForNavBar()) ||
-                        newTheme.getLastThemeChangeRequestType() == RequestType.THEME_UPDATED);
+                        isNewThemeChange);
     }
 
     protected void loadDimens() {
@@ -4705,7 +4740,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     public void updateStackScrollerState(boolean goingToFullShade) {
         if (mStackScroller == null) return;
         boolean onKeyguard = mState == StatusBarState.KEYGUARD;
-        mStackScroller.setHideSensitive(isLockscreenPublicMode(), goingToFullShade);
+        mStackScroller.setHideSensitive(onKeyguard
+                && !userAllowsPrivateNotificationsInPublic(mCurrentUserId), goingToFullShade);
         mStackScroller.setDimmed(onKeyguard, false /* animate */);
         mStackScroller.setExpandingEnabled(!onKeyguard);
         ActivatableNotificationView activatedChild = mStackScroller.getActivatedChild();
@@ -4994,6 +5030,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mStackScroller.setAnimationsEnabled(false);
         updateVisibleToUser();
         mVisualizerView.setVisible(false);
+        if (mQSTileHost.isEditing()) {
+            mQSTileHost.setEditing(false);
+        }
         if (mLaunchCameraOnFinishedGoingToSleep) {
             mLaunchCameraOnFinishedGoingToSleep = false;
 
@@ -5406,7 +5445,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             pm.wakeUp(SystemClock.uptimeMillis(), "com.android.systemui:CAMERA_GESTURE");
             mStatusBarKeyguardViewManager.notifyDeviceWakeUpRequested();
         }
-        vibrateForCameraGesture();
+        if (source != StatusBarManager.CAMERA_LAUNCH_SOURCE_SCREEN_GESTURE) {
+            vibrateForCameraGesture();
+        }
         if (!mStatusBarKeyguardViewManager.isShowing()) {
             startActivity(KeyguardBottomAreaView.INSECURE_CAMERA_INTENT,
                     true /* dismissShade */);

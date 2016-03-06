@@ -28,7 +28,6 @@
   <string name="permdesc_readPhoneBlacklist">Allows an app to read information about phone numbers that are blocked for incoming calls or messages.</string>
   <string name="permlab_changePhoneBlacklist">change phone blacklist</string>
   <string name="permdesc_changePhoneBlacklist">Allows an app to change the phone numbers that are blocked for incoming calls or messages.</string>
-  <string name="global_action_choose_profile">Profile</string>
   <string name="permlab_setKeyguardWallpaper">set keyguard wallpaper</string>
   <string name="permdesc_setKeyguardWallpaper">Allows an app to change the lock screen wallpaper.</string>
   <string name="global_action_reboot">Reboot</string>
@@ -50,20 +49,8 @@
   <string name="adb_active_custom_tile_both">USB &amp; network</string>
   <string name="adb_active_custom_tile_usb">USB</string>
   <string name="adb_active_custom_tile_net">Network</string>
-  <string name="permlab_accessThemeService">access theme service</string>
   <string name="permlab_interceptPackageLaunch">intercept app launch</string>
-  <string name="permdesc_accessThemeService">Allows an app to access the theme service. Should never be needed for normal apps.</string>
-  <string name="permlab_readThemes">read your theme info</string>
-  <string name="permdesc_readThemesDesc">Allows the app to read your themes and
-       determine which theme you have applied.</string>
-  <string name="permlab_writeThemes">modify your themes</string>
-  <string name="permdesc_writeThemesDesc">Allows the app to insert new themes and
-       modify which theme you have applied.</string>
-  <string name="theme_install_error_title">Failed to install theme</string>
-  <string name="theme_install_error_message">%s failed to install</string>
   <string name="stylus_app_not_installed">%s is not installed</string>
-  <string name="theme_reset_notification_title">Theme reset</string>
-  <string name="theme_reset_notification_body">System theme restored due to multiple app crashes.</string>
   <string name="silent_mode_priority">Priority</string>
   <string name="silent_mode_none">None</string>
   <string name="subscription_change_disabled_wifi_ap">Disabled Wi-Fi hotspot due to SIM subscription change</string>
@@ -110,7 +97,6 @@
   <string name="app_ops_start_at_bootup">start at power up</string>
   <string name="app_ops_toast_window">display toast messages</string>
   <string name="app_ops_toggle_bluetooth">toggle Bluetooth</string>
-  <string name="app_ops_toggle_mobile_data">toggle mobile data</string>
   <string name="app_ops_toggle_nfc">toggle NFC</string>
   <string name="app_ops_toggle_wifi">toggle Wi-Fi</string>
   <string name="app_ops_use_alarm_volume">control alarm volume</string>
