@@ -112,9 +112,6 @@ public class NavigationBarView extends LinearLayout {
     private final NavigationBarTransitions mBarTransitions;
 
 
-
-    private boolean mDoubleTapToSleep;
-
     /**
      * Tracks the current visibilities of the far left (R.id.one) and right (R.id.six) buttons
      * while dpad arrow keys are visible.

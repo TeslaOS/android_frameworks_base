@@ -1332,7 +1332,6 @@ public abstract class BaseStatusBar extends SystemUI implements
             mSlimRecents.cancelPreloadingRecentTasksList();
             }
         }
-    }
 
     @Override
     public void onVisibilityChanged(boolean visible) {

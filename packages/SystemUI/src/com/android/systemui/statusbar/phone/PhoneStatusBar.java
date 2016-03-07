@@ -2334,8 +2334,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             backdropBitmap = mKeyguardWallpaper;
         }
 
-        boolean keyguardVisible = (mState != StatusBarState.SHADE);
-
         // HACK: Consider keyguard as visible if showing sim pin security screen
         KeyguardUpdateMonitor updateMonitor = KeyguardUpdateMonitor.getInstance(mContext);
         boolean keyguardVisible = mState != StatusBarState.SHADE || updateMonitor.isSimPinSecure();
@@ -5501,10 +5499,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 updateMediaMetaData(true);
             }
         });
-    }
-
-    public VisualizerView getVisualizer() {
-        return mVisualizerView;
     }
 
     private final class ShadeUpdates {

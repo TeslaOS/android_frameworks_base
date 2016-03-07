@@ -64,7 +64,7 @@ public class KeyguardStatusBarView extends RelativeLayout {
     private Interpolator mFastOutSlowInInterpolator;
 
     private UserInfoController mUserInfoController;
-  
+
     private ContentObserver mObserver = new ContentObserver(new Handler()) {
         public void onChange(boolean selfChange, Uri uri) {
             showStatusBarCarrier();
@@ -263,10 +263,5 @@ public class KeyguardStatusBarView extends RelativeLayout {
         super.onAttachedToWindow();
         getContext().getContentResolver().registerContentObserver(Settings.System.getUriFor(
                 "status_bar_show_carrier"), false, mObserver);
-    }
-
-    @Override
-    public void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
     }
 }
