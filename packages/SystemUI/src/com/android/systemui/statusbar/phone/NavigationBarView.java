@@ -1016,9 +1016,6 @@ public class NavigationBarView extends LinearLayout {
         @Override
         protected void update() {
             ContentResolver resolver = mContext.getContentResolver();
-
-            mShowDpadArrowKeys = CMSettings.System.getIntForUser(getContext().getContentResolver(),
-                    CMSettings.System.NAVIGATION_BAR_MENU_ARROW_KEYS, 0, UserHandle.USER_CURRENT) != 0;
             mDimNavButtons = (Settings.System.getIntForUser(resolver,
                     Settings.System.DIM_NAV_BUTTONS, 0,
                     UserHandle.USER_CURRENT) == 1);
@@ -1040,17 +1037,8 @@ public class NavigationBarView extends LinearLayout {
             mDoubleTapToSleep = (Settings.System.getIntForUser(resolver,
                     Settings.System.DOUBLE_TAP_SLEEP_NAVBAR, 0,
                     UserHandle.USER_CURRENT) == 1);
-            // reset saved side button visibilities
-            for (int i = 0; i < mSideButtonVisibilities.length; i++) {
-                for (int j = 0; j < mSideButtonVisibilities[i].length; j++) {
-                    mSideButtonVisibilities[i][j] = -1;
-                }
-            }
-            setNavigationIconHints(mNavigationIconHints, true);
-
             onNavButtonTouched();
         }
-    }
 
     private Runnable mNavButtonDimmer = new Runnable() {
         @Override
@@ -1088,11 +1076,12 @@ public class NavigationBarView extends LinearLayout {
             }
         }
     };
+
+        @Override
         public void onChange(boolean selfChange, Uri uri) {
             super.onChange(selfChange, uri);
             updateShowDpadKeys();
         }
-    }
 
     private void updateShowDpadKeys() {
         mShowDpadArrowKeys = CMSettings.System.getIntForUser(getContext().getContentResolver(),
