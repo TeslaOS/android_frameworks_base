@@ -2128,8 +2128,9 @@ public abstract class BaseStatusBar extends SystemUI implements
         boolean shouldInterrupt = shouldInterrupt(entry, notification);
         boolean alertAgain = alertAgain(entry, n);
 
+        final StatusBarNotification oldNotification = entry.notification;
         entry.notification = notification;
-        mGroupManager.onEntryUpdated(entry, entry.notification);
+        mGroupManager.onEntryUpdated(entry, oldNotification);
 
         boolean updateSuccessful = false;
         if (applyInPlace) {
