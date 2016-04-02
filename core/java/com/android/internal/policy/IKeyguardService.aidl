@@ -98,4 +98,7 @@ oneway interface IKeyguardService {
     void onActivityDrawn();
 
     oneway void setBackgroundBitmap(in Bitmap bmp);
+
+    void showKeyguard();
+
 }

@@ -294,4 +294,7 @@ interface IWindowManager
      * @hide
      */
     int getSystemUIVisibility();
+
+    void setLiveLockscreenEdgeDetector(boolean enable);
+
 }

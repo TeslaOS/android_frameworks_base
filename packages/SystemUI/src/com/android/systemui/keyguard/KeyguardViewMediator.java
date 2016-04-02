@@ -152,6 +152,8 @@ public class KeyguardViewMediator extends SystemUI {
             "com.android.internal.action.KEYGUARD_SERVICE_STATE_CHANGED";
     private static final String KEYGUARD_SERVICE_EXTRA_ACTIVE = "active";
 
+    private static final String DECRYPT_STATE = "trigger_restart_framework";
+
     // used for handler messages
     private static final int SHOW = 2;
     private static final int HIDE = 3;
@@ -344,10 +346,14 @@ public class KeyguardViewMediator extends SystemUI {
      */
     private boolean mPendingLock;
 
+    private boolean mCryptKeeperEnabled = true;
+
     private boolean mWakeAndUnlocking;
     private IKeyguardDrawnCallback mDrawnCallback;
 
     private LockscreenEnabledSettingsObserver mSettingsObserver;
+    private PhoneStatusBar mStatusBar;
+
     public static class LockscreenEnabledSettingsObserver extends UserContentObserver {
 
         private static final String KEY_ENABLED = "lockscreen_enabled";
@@ -922,6 +928,17 @@ public class KeyguardViewMediator extends SystemUI {
         return false;
     }
 
+    private boolean isCryptKeeperEnabled() {
+        if (!mCryptKeeperEnabled) {
+            // once it's disabled, it's disabled.
+            return false;
+        }
+        final String state = SystemProperties.get("vold.decrypt");
+        mCryptKeeperEnabled = !"".equals(state) && !DECRYPT_STATE.equals(state);
+        if (DEBUG) Log.w(TAG, "updated crypt keeper state to: " + mCryptKeeperEnabled);
+        return mCryptKeeperEnabled;
+    }
+
     /**
      * A dream started.  We should lock after the usual screen-off lock timeout but only
      * if there is a secure lock pattern.
@@ -1188,6 +1205,14 @@ public class KeyguardViewMediator extends SystemUI {
             return;
         }
 
+        // Ugly hack to ensure keyguard is not shown on top of the CryptKeeper which prevents
+        // a user from being able to decrypt their device.
+        if (isCryptKeeperEnabled()) {
+            if (DEBUG) Log.d(TAG, "doKeyguard: not showing because CryptKeeper is enabled");
+            resetStateLocked();
+            return;
+        }
+
         // if the setup wizard hasn't run yet, don't show
         final boolean requireSim = !SystemProperties.getBoolean("keyguard.no_require_sim", false);
         final boolean absent = SubscriptionManager.isValidSubscriptionId(
@@ -1267,6 +1292,15 @@ public class KeyguardViewMediator extends SystemUI {
 
     public void dismiss() {
         mHandler.sendEmptyMessage(DISMISS);
+    }
+
+    public void showKeyguard() {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mStatusBar.showKeyguard();
+            }
+        });
     }
 
     /**
@@ -1843,6 +1877,7 @@ public class KeyguardViewMediator extends SystemUI {
             FingerprintUnlockController fingerprintUnlockController) {
         mStatusBarKeyguardViewManager.registerStatusBar(phoneStatusBar, container,
                 statusBarWindowManager, scrimController, fingerprintUnlockController);
+        mStatusBar = phoneStatusBar;
         return mStatusBarKeyguardViewManager;
     }
 
