@@ -134,7 +134,9 @@ public class KeyguardStatusBarView extends RelativeLayout {
             removeView(mMultiUserSwitch);
         }
         mBatteryLevel.setVisibility(View.VISIBLE);
-
+        if (mDockBatteryLevel != null) {
+            mDockBatteryLevel.setVisibility(View.VISIBLE);
+        }
         if (mCarrierLabel != null) {
             if (mShowCarrierLabel == 1) {
                 mCarrierLabel.setVisibility(View.VISIBLE);
@@ -143,11 +145,8 @@ public class KeyguardStatusBarView extends RelativeLayout {
             } else {
                 mCarrierLabel.setVisibility(View.GONE);
             }
-
-        if (mDockBatteryLevel != null) {
-            mDockBatteryLevel.setVisibility(View.VISIBLE);
-        }
-    }
+          }
+      }
 
     private void updateSystemIconsLayoutParams() {
         RelativeLayout.LayoutParams lp =

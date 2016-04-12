@@ -5556,6 +5556,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 updateMediaMetaData(true);
             }
         });
+      }
 
     public boolean isShowingLiveLockScreenView() {
         return mLiveLockScreenController.isShowingLiveLockScreenView();
