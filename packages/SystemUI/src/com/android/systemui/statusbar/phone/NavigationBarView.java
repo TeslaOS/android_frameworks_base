@@ -613,6 +613,7 @@ public class NavigationBarView extends BaseNavigationBar {
         if (mSettingsObserver != null) {
             mSettingsObserver.unobserve();
         }
+    }
 
     boolean isBarPulseFaded() {
         if (mPulse == null) {

@@ -1159,7 +1159,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
 
         addGestureAnywhereView();
-        addAppCircleSidebar();
 
         if (mAssistManager == null) {
             mAssistManager = new AssistManager(this, context);
@@ -3162,11 +3161,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         checkBarModes();
     }
 
-	@Override // CommandQueue
-    public void showCustomIntentAfterKeyguard(Intent intent) {
-        startActivityDismissingKeyguard(intent, false, false);
-    }
-
     @Override // CommandQueue
     public void showCustomIntentAfterKeyguard(Intent intent) {
         startActivityDismissingKeyguard(intent, false, false);
@@ -4079,6 +4073,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
      * meantime, just update the things that we know change.
      */
     void updateResources(Configuration newConfig) {
+      SettingsObserver observer = new SettingsObserver(mHandler);
         // detect theme change.
         ThemeConfig newTheme = newConfig != null ? newConfig.themeConfig : null;
         final boolean updateStatusBar = shouldUpdateStatusbar(mCurrentTheme, newTheme);
