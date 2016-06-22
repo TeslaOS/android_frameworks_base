@@ -64,7 +64,6 @@ import android.media.session.MediaController;
 import android.media.session.MediaSession;
 import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.BatteryManager;
 import android.os.Bundle;
@@ -392,14 +391,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     boolean mExpandedVisible;
 
-    // Weather temperature
-    private TextView mWeatherTempView;
-    private int mWeatherTempState;
-    private int mWeatherTempStyle;
-    private int mWeatherTempColor;
-    private int mWeatherTempSize;
-    private int mWeatherTempFontStyle = FONT_NORMAL;
-    private WeatherControllerImpl mWeatherController;
 
     private int mNavigationBarWindowState = WINDOW_STATE_SHOWING;
 
@@ -492,21 +483,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             resolver.registerContentObserver(CMSettings.System.getUriFor(
                     CMSettings.Secure.RECENTS_LONG_PRESS_ACTIVITY), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_SHOW_WEATHER_TEMP),
-                    false, this, UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_WEATHER_TEMP_STYLE),
-                    false, this, UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_WEATHER_COLOR),
-                    false, this, UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_WEATHER_SIZE),
-                    false, this, UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_WEATHER_FONT_STYLE),
-                    false, this, UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.LOCKSCREEN_BLUR_RADIUS), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.USE_SLIM_RECENTS), false, this,
@@ -517,6 +493,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.RECENT_CARD_TEXT_COLOR), false, this,
                     UserHandle.USER_ALL);
+
             update();
         }
 
@@ -537,19 +514,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     || uri.equals(Settings.System.getUriFor(
                     Settings.System.RECENT_CARD_TEXT_COLOR))) {
                 rebuildRecentsScreen();
-            } else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_WEATHER_TEMP_STYLE))
-                    || uri.equals(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_WEATHER_COLOR))
-                    || uri.equals(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_WEATHER_SIZE))
-                    || uri.equals(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_WEATHER_FONT_STYLE))) {
-                    recreateStatusBar();
-                    updateRowStates();
-                    updateSpeedbump();
-                    updateClearAll();
-                    updateEmptyShadeView();
             }
             update();
         }
@@ -575,67 +539,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             // This method reads CMSettings.Secure.RECENTS_LONG_PRESS_ACTIVITY
             updateCustomRecentsLongPressHandler(false);
 
-            mWeatherTempStyle = Settings.System.getIntForUser(
-                    resolver, Settings.System.STATUS_BAR_WEATHER_TEMP_STYLE, 0,
-                    UserHandle.USER_CURRENT);
-
-            mWeatherTempColor = Settings.System.getIntForUser(resolver,
-                    Settings.System.STATUS_BAR_WEATHER_COLOR, 0xFFFFFFFF, mCurrentUserId);
-
-            mWeatherTempSize = Settings.System.getIntForUser(resolver,
-                    Settings.System.STATUS_BAR_WEATHER_SIZE, 14, mCurrentUserId);
-
-            mWeatherTempFontStyle = Settings.System.getIntForUser(resolver,
-                    Settings.System.STATUS_BAR_WEATHER_FONT_STYLE, FONT_NORMAL, mCurrentUserId);
-
-            final int oldWeatherState = mWeatherTempState;
-            mWeatherTempState = Settings.System.getIntForUser(
-                    resolver, Settings.System.STATUS_BAR_SHOW_WEATHER_TEMP, 0,
-                    UserHandle.USER_CURRENT);
-            if (oldWeatherState != mWeatherTempState) {
-                updateWeatherTextState(mWeatherController.getWeatherInfo().temp,
-                        mWeatherTempColor, mWeatherTempSize, mWeatherTempFontStyle);
-            }
-
             mBlurRadius = Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.LOCKSCREEN_BLUR_RADIUS, 14);
-
         }
-    }
-
-    private void updateWeatherTextState(String temp, int color, int size, int font) {
-        if (mWeatherTempState == 0 || TextUtils.isEmpty(temp)) {
-            mWeatherTempView.setVisibility(View.GONE);
-            return;
-        }
-        if (mWeatherTempState == 1) {
-            SpannableString span = new SpannableString(temp);
-            span.setSpan(new RelativeSizeSpan(0.7f), temp.length() - 1, temp.length(), 0);
-            mWeatherTempView.setText(span);
-        } else if (mWeatherTempState == 2) {
-            mWeatherTempView.setText(temp.substring(0, temp.length() - 1));
-        }
-        mWeatherTempView.setTextColor(color);
-        mWeatherTempView.setTextSize(size);
-        switch (font) {
-            default:
-            case FONT_NORMAL:
-                mWeatherTempView.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
-                break;
-            case FONT_BOLD:
-                mWeatherTempView.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
-                break;
-            case FONT_CONDENSED:
-                mWeatherTempView.setTypeface(Typeface.create("sans-serif-condensed", Typeface.NORMAL));
-                break;
-            case FONT_LIGHT:
-                mWeatherTempView.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
-                break;
-            case FONT_LIGHT_ITALIC:
-                mWeatherTempView.setTypeface(Typeface.create("sans-serif-light", Typeface.ITALIC));
-                break;
-        }
-        mWeatherTempView.setVisibility(View.VISIBLE);
     }
 
     public void setStatusBarViewVisibility(boolean visible) {
@@ -1323,33 +1229,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             }
         }
 
-        mWeatherTempStyle = Settings.System.getIntForUser(
-                mContext.getContentResolver(), Settings.System.STATUS_BAR_WEATHER_TEMP_STYLE, 0,
-                UserHandle.USER_CURRENT);
-        if (mWeatherTempStyle == 0) {
-            mWeatherTempView = (TextView) mStatusBarView.findViewById(R.id.weather_temp);
-        } else {
-            mWeatherTempView = (TextView) mStatusBarView.findViewById(R.id.left_weather_temp);
-        }
-
-        mWeatherTempColor = Settings.System.getIntForUser(mContext.getContentResolver(),
-                    Settings.System.STATUS_BAR_WEATHER_COLOR, 0xFFFFFFFF, mCurrentUserId);
-        mWeatherTempFontStyle = Settings.System.getIntForUser(mContext.getContentResolver(),
-                    Settings.System.STATUS_BAR_WEATHER_FONT_STYLE, FONT_NORMAL, mCurrentUserId);
-        mWeatherTempSize = Settings.System.getIntForUser(mContext.getContentResolver(),
-                    Settings.System.STATUS_BAR_WEATHER_SIZE, 14, mCurrentUserId);
-        mWeatherTempState = Settings.System.getIntForUser(
-                mContext.getContentResolver(), Settings.System.STATUS_BAR_SHOW_WEATHER_TEMP, 0,
-                UserHandle.USER_CURRENT);
-        mWeatherController = new WeatherControllerImpl(mContext);
-        mWeatherController.addCallback(new WeatherController.Callback() {
-            @Override
-            public void onWeatherChanged(WeatherInfo temp) {
-                updateWeatherTextState(temp.temp, mWeatherTempColor, mWeatherTempSize, mWeatherTempFontStyle);
-            }
-        });
-        updateWeatherTextState(mWeatherController.getWeatherInfo().temp, mWeatherTempColor,
-                mWeatherTempSize, mWeatherTempFontStyle);
+        if (mWeatherController == null) {
+           mWeatherController = new WeatherControllerImpl(mContext);
+         }
 
         mKeyguardUserSwitcher = new KeyguardUserSwitcher(mContext,
                 (ViewStub) mStatusBarWindowContent.findViewById(R.id.keyguard_user_switcher),
