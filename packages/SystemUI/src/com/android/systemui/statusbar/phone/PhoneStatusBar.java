@@ -64,6 +64,7 @@ import android.media.session.MediaController;
 import android.media.session.MediaSession;
 import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.BatteryManager;
 import android.os.Bundle;
@@ -122,10 +123,6 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.internal.statusbar.NotificationVisibility;
 import com.android.internal.statusbar.StatusBarIcon;
 import com.android.internal.util.cm.ActionUtils;
-import com.android.internal.util.tesla.WeatherController;
-import com.android.internal.util.tesla.WeatherController.WeatherInfo;
-import com.android.internal.util.tesla.WeatherControllerImpl;
-import com.android.internal.util.cm.Blur;
 import com.android.keyguard.KeyguardHostView.OnDismissAction;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
@@ -284,13 +281,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     public static final int FADE_KEYGUARD_START_DELAY = 100;
     public static final int FADE_KEYGUARD_DURATION = 300;
     public static final int FADE_KEYGUARD_DURATION_PULSING = 96;
-
-    // Weather temperature
-    public static final int FONT_NORMAL = 0;
-    public static final int FONT_BOLD = 1;
-    public static final int FONT_CONDENSED = 2;
-    public static final int FONT_LIGHT = 3;
-    public static final int FONT_LIGHT_ITALIC = 4;
 
     /** Allow some time inbetween the long press for back and recents. */
     private static final int LOCK_TO_APP_GESTURE_TOLERENCE = 200;
@@ -461,9 +451,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     // - The custom Recents Long Press, if selected.  When null, use default (switch last app).
     private ComponentName mCustomRecentsLongPressHandler = null;
 
-    private int mBlurRadius;
-    private Bitmap mBlurredImage = null;
-
     class SettingsObserver extends UserContentObserver {
         SettingsObserver(Handler handler) {
             super(handler);
@@ -484,8 +471,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             resolver.registerContentObserver(CMSettings.System.getUriFor(
                     CMSettings.Secure.RECENTS_LONG_PRESS_ACTIVITY), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.LOCKSCREEN_BLUR_RADIUS), false, this);
-            resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.USE_SLIM_RECENTS), false, this,
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
@@ -494,7 +479,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.RECENT_CARD_TEXT_COLOR), false, this,
                     UserHandle.USER_ALL);
-
             update();
         }
 
@@ -539,9 +523,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
             // This method reads CMSettings.Secure.RECENTS_LONG_PRESS_ACTIVITY
             updateCustomRecentsLongPressHandler(false);
-
-            mBlurRadius = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.LOCKSCREEN_BLUR_RADIUS, 14);
         }
     }
 
@@ -1229,10 +1210,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                         mHandler);
             }
         }
-
         if (mWeatherController == null) {
-           mWeatherController = new WeatherControllerImpl(mContext);
-         }
+            mWeatherController = new WeatherControllerImpl(mContext);
+        }
 
         mKeyguardUserSwitcher = new KeyguardUserSwitcher(mContext,
                 (ViewStub) mStatusBarWindowContent.findViewById(R.id.keyguard_user_switcher),
@@ -2269,17 +2249,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             }
         }
 
-        // apply blurred image
-        if (backdropBitmap == null) {
-            backdropBitmap = mBlurredImage;
-            // might still be null
-        }
-
-        // apply user lockscreen image
-        if (backdropBitmap == null && !mLiveLockScreenController.isShowingLiveLockScreenView()) {
-            backdropBitmap = mKeyguardWallpaper;
-        }
-
         // HACK: Consider keyguard as visible if showing sim pin security screen
         KeyguardUpdateMonitor updateMonitor = KeyguardUpdateMonitor.getInstance(mContext);
         boolean keyguardVisible = mState != StatusBarState.SHADE || updateMonitor.isSimPinSecure();
@@ -2290,6 +2259,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     && mMediaController.getPlaybackState() != null
                     && mMediaController.getPlaybackState().getState()
                             == PlaybackState.STATE_PLAYING);
+        }
+
+        // apply user lockscreen image
+        if (backdropBitmap == null && !mLiveLockScreenController.isShowingLiveLockScreenView()) {
+            backdropBitmap = mKeyguardWallpaper;
         }
 
         if (keyguardVisible) {
@@ -5465,23 +5439,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     public VisualizerView getVisualizer() {
         return mVisualizerView;
     }
-
-    public void setBackgroundBitmap(Bitmap bmp) {
-        if (bmp == null && mBlurredImage == null) return;
-
-        if (bmp != null && mBlurRadius != 0) {
-            mBlurredImage = Blur.blurBitmap(mContext, bmp, mBlurRadius);
-        } else {
-            mBlurredImage = bmp;
-        }
-
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                updateMediaMetaData(true);
-            }
-        });
-      }
 
     public boolean isShowingLiveLockScreenView() {
         return mLiveLockScreenController.isShowingLiveLockScreenView();

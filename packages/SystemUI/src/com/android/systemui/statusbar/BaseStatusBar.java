@@ -2417,6 +2417,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         lp.setTitle("GestureAnywhereView");
 
         return lp;
+      }
 
     /**
      * Returns a context with the given theme applied or the original context if we fail to get a

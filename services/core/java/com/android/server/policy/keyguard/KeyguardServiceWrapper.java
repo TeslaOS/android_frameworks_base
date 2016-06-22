@@ -17,7 +17,6 @@
 package com.android.server.policy.keyguard;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -226,22 +225,6 @@ public class KeyguardServiceWrapper implements IKeyguardService {
         }
     }
 
-    public void setBackgroundBitmap(Bitmap bmp) {
-        try {
-            mService.setBackgroundBitmap(bmp);
-        } catch (RemoteException e) {
-            Slog.w(TAG, "Remote Exception", e);
-        }
-    }
-
-    public void showKeyguard() {
-        try {
-            mService.showKeyguard();
-        } catch (RemoteException e) {
-            Slog.w(TAG, "Remote Exception", e);
-        }
-    }
-
     @Override // Binder interface
     public IBinder asBinder() {
         return mService.asBinder();
@@ -261,5 +244,13 @@ public class KeyguardServiceWrapper implements IKeyguardService {
 
     public void dump(String prefix, PrintWriter pw) {
         mKeyguardStateMonitor.dump(prefix, pw);
+    }
+
+    public void showKeyguard() {
+        try {
+            mService.showKeyguard();
+        } catch (RemoteException e) {
+            Slog.w(TAG, "Remote Exception", e);
+        }
     }
 }
