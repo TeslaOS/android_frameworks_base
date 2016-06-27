@@ -41,10 +41,6 @@
         <item name="android:textSize">@dimen/qs_detail_item_secondary_text_size</item>
     </style>
 
-    <style name="TextAppearance.StatusBar.WeatherTemp" parent="@*android:style/TextAppearance.StatusBar">
-        <item name="android:textStyle">normal</item>
-    </style>
-
     <!-- Base battery metter drawable style -->
     <style name="BatteryMeterViewDrawable">
         <!-- gravity used for positioning text within the battery meter -->
